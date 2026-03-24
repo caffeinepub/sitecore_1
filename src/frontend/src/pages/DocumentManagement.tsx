@@ -1,4 +1,4 @@
-import { Download, FileText, Trash2, Upload } from "lucide-react";
+import { Download, FileText, Search, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -9,6 +9,7 @@ interface Doc {
   id: string;
   name: string;
   type: string;
+  category: string;
   uploadDate: string;
   size: string;
   base64: string;
@@ -36,6 +37,22 @@ const TYPE_COLORS: Record<string, string> = {
   other: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
+const CATEGORY_TABS = [
+  { key: "all", label: "Tümü" },
+  { key: "management", label: "Yönetim" },
+  { key: "insurance", label: "Sigorta" },
+  { key: "meeting", label: "Toplantı" },
+  { key: "financial", label: "Mali" },
+  { key: "other", label: "Diğer" },
+];
+
+const DOC_TYPE_TO_CATEGORY: Record<string, string> = {
+  management_plan: "management",
+  insurance: "insurance",
+  meeting_minutes: "meeting",
+  other: "other",
+};
+
 export default function DocumentManagement({
   buildingId,
   isOwner,
@@ -58,7 +75,10 @@ export default function DocumentManagement({
   } | null>(null);
   const [pendingName, setPendingName] = useState("");
   const [pendingType, setPendingType] = useState("other");
+  const [pendingCategory, setPendingCategory] = useState("other");
   const [error, setError] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const saveDocs = (updated: Doc[]) => {
@@ -81,6 +101,7 @@ export default function DocumentManagement({
       setPendingFile({ file, base64 });
       setPendingName(file.name);
       setPendingType("other");
+      setPendingCategory("other");
     };
     reader.readAsDataURL(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -92,6 +113,7 @@ export default function DocumentManagement({
       id: Date.now().toString(),
       name: pendingName || pendingFile.file.name,
       type: pendingType,
+      category: pendingCategory || DOC_TYPE_TO_CATEGORY[pendingType] || "other",
       uploadDate: new Date().toLocaleDateString(),
       size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
       base64: pendingFile.base64,
@@ -101,6 +123,7 @@ export default function DocumentManagement({
     setPendingFile(null);
     setPendingName("");
     setPendingType("other");
+    setPendingCategory("other");
   };
 
   const handleDownload = (doc: Doc) => {
@@ -119,6 +142,17 @@ export default function DocumentManagement({
   const handleDelete = (id: string) => {
     saveDocs(docs.filter((d) => d.id !== id));
   };
+
+  const filteredDocs = docs.filter((doc) => {
+    const matchesCategory =
+      activeCategory === "all" ||
+      (doc.category || DOC_TYPE_TO_CATEGORY[doc.type] || "other") ===
+        activeCategory;
+    const matchesSearch =
+      !searchQuery ||
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div>
@@ -152,6 +186,37 @@ export default function DocumentManagement({
         </div>
       )}
 
+      {/* Category Filter Tabs */}
+      <div className="flex gap-2 flex-wrap mb-4">
+        {CATEGORY_TABS.map((cat) => (
+          <button
+            key={cat.key}
+            type="button"
+            onClick={() => setActiveCategory(cat.key)}
+            data-ocid="documents.tab"
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              activeCategory === cat.key
+                ? "bg-[#4A90D9] text-white"
+                : "bg-[#F3F6FB] text-[#3A4654] hover:bg-[#E5EAF2]"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7A8D]" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Belge ara..."
+          className="pl-9"
+          data-ocid="documents.search_input"
+        />
+      </div>
+
       {/* Upload Form */}
       {pendingFile && (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2] mb-6">
@@ -170,22 +235,40 @@ export default function DocumentManagement({
                 className="border-[#D7DEE9]"
               />
             </div>
-            <div>
-              <Label className="text-sm font-medium text-[#3A4654] mb-1 block">
-                {t.documentType}
-              </Label>
-              <select
-                data-ocid="documents.select"
-                value={pendingType}
-                onChange={(e) => setPendingType(e.target.value)}
-                className="w-full border border-[#D7DEE9] rounded-lg px-3 py-2 text-sm text-[#0E1116] bg-white"
-              >
-                {DOC_TYPES.map((dt) => (
-                  <option key={dt.value} value={dt.value}>
-                    {t[dt.labelKey]}
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-[#3A4654] mb-1 block">
+                  {t.documentType}
+                </Label>
+                <select
+                  data-ocid="documents.select"
+                  value={pendingType}
+                  onChange={(e) => setPendingType(e.target.value)}
+                  className="w-full border border-[#D7DEE9] rounded-lg px-3 py-2 text-sm text-[#0E1116] bg-white"
+                >
+                  {DOC_TYPES.map((dt) => (
+                    <option key={dt.value} value={dt.value}>
+                      {t[dt.labelKey]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-[#3A4654] mb-1 block">
+                  Kategori
+                </Label>
+                <select
+                  value={pendingCategory}
+                  onChange={(e) => setPendingCategory(e.target.value)}
+                  className="w-full border border-[#D7DEE9] rounded-lg px-3 py-2 text-sm text-[#0E1116] bg-white"
+                >
+                  {CATEGORY_TABS.filter((c) => c.key !== "all").map((c) => (
+                    <option key={c.key} value={c.key}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex gap-3 pt-1">
               <Button
@@ -209,13 +292,15 @@ export default function DocumentManagement({
       )}
 
       {/* Document List */}
-      {docs.length === 0 ? (
+      {filteredDocs.length === 0 ? (
         <div
           data-ocid="documents.empty_state"
           className="bg-white rounded-2xl p-12 shadow-sm border border-[#E5EAF2] flex flex-col items-center justify-center gap-3 text-center"
         >
           <FileText className="w-12 h-12 text-[#D7DEE9]" />
-          <p className="text-[#3A4654]">{t.noDocuments}</p>
+          <p className="text-[#3A4654]">
+            {searchQuery ? "Arama sonucu bulunamadı." : t.noDocuments}
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-[#E5EAF2] overflow-hidden">
@@ -238,7 +323,7 @@ export default function DocumentManagement({
               </tr>
             </thead>
             <tbody>
-              {docs.map((doc, idx) => (
+              {filteredDocs.map((doc, idx) => (
                 <tr
                   key={doc.id}
                   data-ocid={`documents.item.${idx + 1}`}

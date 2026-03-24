@@ -1,4 +1,4 @@
-import { Plus, UserCheck } from "lucide-react";
+import { Plus, Star, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -23,7 +23,6 @@ interface Props {
   isOwner: boolean;
   t: any;
 }
-
 const APT_KEY = (id: string) => `sitecore_apartments_${id}`;
 const VIS_KEY = (id: string) => `sitecore_visitors_${id}`;
 
@@ -42,7 +41,6 @@ export default function VisitorManagement({
     expectedDate: "",
     description: "",
   });
-
   useEffect(() => {
     const raw = localStorage.getItem(APT_KEY(buildingId));
     if (raw) setApartments(JSON.parse(raw));
@@ -96,6 +94,15 @@ export default function VisitorManagement({
     return `${apt.block ? `${apt.block}-` : ""}${apt.number}`;
   };
 
+  const getDuration = (v: Visitor) => {
+    if (v.arrivedAt && v.leftAt) {
+      const mins = Math.round((v.leftAt - v.arrivedAt) / 60000);
+      if (mins < 60) return `${mins} dk`;
+      return `${Math.floor(mins / 60)}s ${mins % 60}dk`;
+    }
+    return null;
+  };
+
   const statusBadge = (status: Visitor["status"]) => {
     if (status === "arrived")
       return (
@@ -116,6 +123,38 @@ export default function VisitorManagement({
     );
   };
 
+  // Frequent visitors
+  const visitorCounts: Record<string, number> = {};
+  for (const v of visitors) {
+    visitorCounts[v.name] = (visitorCounts[v.name] || 0) + 1;
+  }
+  const frequent = Object.entries(visitorCounts)
+    .filter(([, c]) => c >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  // Stats
+  const today = new Date().toDateString();
+  const todayCount = visitors.filter(
+    (v) => new Date(v.createdAt).toDateString() === today,
+  ).length;
+  const weekAgo = Date.now() - 7 * 86400000;
+  const weekCount = visitors.filter((v) => v.createdAt > weekAgo).length;
+  const completed = visitors.filter((v) => v.arrivedAt && v.leftAt);
+  const avgDuration =
+    completed.length > 0
+      ? Math.round(
+          completed.reduce(
+            (acc, v) => acc + (v.leftAt! - v.arrivedAt!) / 60000,
+            0,
+          ) / completed.length,
+        )
+      : 0;
+
+  const expected = visitors.filter((v) => v.status === "expected");
+  const active = visitors.filter((v) => v.status === "arrived");
+  const past = visitors.filter((v) => v.status === "left");
+
   const VisitorCard = ({ v, idx }: { v: Visitor; idx: number }) => (
     <div
       data-ocid={`visitors.item.${idx + 1}`}
@@ -135,6 +174,11 @@ export default function VisitorManagement({
           )}
           {v.description && (
             <p className="text-sm text-[#3A4654] mt-1">{v.description}</p>
+          )}
+          {getDuration(v) && (
+            <p className="text-xs text-green-600 mt-1">
+              Süre: {getDuration(v)}
+            </p>
           )}
         </div>
         {statusBadge(v.status)}
@@ -164,10 +208,6 @@ export default function VisitorManagement({
     </div>
   );
 
-  const expected = visitors.filter((v) => v.status === "expected");
-  const active = visitors.filter((v) => v.status === "arrived");
-  const past = visitors.filter((v) => v.status === "left");
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -183,22 +223,50 @@ export default function VisitorManagement({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2] text-center">
-          <p className="text-3xl font-bold text-yellow-600">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2] text-center">
+          <p className="text-2xl font-bold text-yellow-600">
             {expected.length}
           </p>
-          <p className="text-[#3A4654] text-sm mt-1">{t.expectedVisitors}</p>
+          <p className="text-[#3A4654] text-xs mt-1">{t.expectedVisitors}</p>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2] text-center">
-          <p className="text-3xl font-bold text-blue-600">{active.length}</p>
-          <p className="text-[#3A4654] text-sm mt-1">{t.activeVisitors}</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2] text-center">
+          <p className="text-2xl font-bold text-blue-600">{active.length}</p>
+          <p className="text-[#3A4654] text-xs mt-1">{t.activeVisitors}</p>
         </div>
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2] text-center">
-          <p className="text-3xl font-bold text-[#3A4654]">{past.length}</p>
-          <p className="text-[#3A4654] text-sm mt-1">{t.visitHistory}</p>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2] text-center">
+          <p className="text-2xl font-bold text-[#0E1116]">{todayCount}</p>
+          <p className="text-[#3A4654] text-xs mt-1">Bugün</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2] text-center">
+          <p className="text-2xl font-bold text-purple-600">
+            {avgDuration > 0 ? `${avgDuration}dk` : "-"}
+          </p>
+          <p className="text-[#3A4654] text-xs mt-1">Ort. Süre</p>
         </div>
       </div>
+
+      {/* Frequent Visitors */}
+      {frequent.length > 0 && (
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2] mb-6">
+          <p className="font-semibold text-[#0E1116] mb-3 flex items-center gap-2">
+            <Star className="w-4 h-4 text-yellow-500" /> Sık Ziyaretçiler
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {frequent.map(([name, count]) => (
+              <div
+                key={name}
+                className="flex items-center gap-1 bg-[#F3F6FB] rounded-full px-3 py-1 text-sm"
+              >
+                <span className="font-medium">{name}</span>
+                <Badge className="bg-yellow-100 text-yellow-700 border-0 text-xs ml-1">
+                  {count}x
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue="expected">
         <TabsList className="mb-4">
@@ -211,6 +279,7 @@ export default function VisitorManagement({
           <TabsTrigger value="past">
             {t.visitHistory} ({past.length})
           </TabsTrigger>
+          <TabsTrigger value="stats">Bu Hafta ({weekCount})</TabsTrigger>
         </TabsList>
         <TabsContent value="expected">
           {expected.length === 0 ? (
@@ -253,6 +322,39 @@ export default function VisitorManagement({
               ))}
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="stats">
+          <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+            <p className="font-semibold text-[#0E1116] mb-4">
+              Bu Haftaki Ziyaretçiler
+            </p>
+            {visitors.filter((v) => v.createdAt > weekAgo).length === 0 ? (
+              <p className="text-center text-[#3A4654] py-6">
+                Bu hafta ziyaretçi yok.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {visitors
+                  .filter((v) => v.createdAt > weekAgo)
+                  .map((v, _idx) => (
+                    <div
+                      key={v.id}
+                      className="flex justify-between items-center border-b border-[#E5EAF2] pb-2 text-sm"
+                    >
+                      <span className="font-medium">{v.name}</span>
+                      <div className="flex items-center gap-2">
+                        {getDuration(v) && (
+                          <span className="text-green-600">
+                            {getDuration(v)}
+                          </span>
+                        )}
+                        {statusBadge(v.status)}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
