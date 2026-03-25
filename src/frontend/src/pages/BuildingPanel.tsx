@@ -25,6 +25,7 @@ import {
   Image,
   KeyRound as Key,
   Leaf,
+  Lightbulb,
   ListOrdered,
   MapPin,
   Megaphone,
@@ -141,6 +142,9 @@ import VisitorPreAuth from "./VisitorPreAuth";
 import WasteManagement from "./WasteManagement";
 import WorkOrderManagement from "./WorkOrderManagement";
 
+import DuesTransparency from "./DuesTransparency";
+import FacilityEquipment from "./FacilityEquipment";
+import ResidentServiceRequests from "./ResidentServiceRequests";
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -777,6 +781,24 @@ export default function BuildingPanel() {
       icon: Award,
       show: isOwner || hasPermission("manage_users"),
     },
+    {
+      key: "facilityEquipment",
+      label: "Tesis & Ekipman",
+      icon: Settings,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "duesTransparency",
+      label: "Aidat u015eeffaflu0131u011fu0131",
+      icon: PieChart,
+      show: true,
+    },
+    {
+      key: "serviceRequests",
+      label: "Hizmet Talepleri",
+      icon: Lightbulb,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -918,6 +940,9 @@ export default function BuildingPanel() {
                     "parkingAllocation",
                     "disabledSupport",
                     "supplierContracts",
+                    "serviceRequests",
+                    "duesTransparency",
+                    "facilityEquipment",
                   ],
                 },
               ];
@@ -2595,6 +2620,27 @@ export default function BuildingPanel() {
           )}
           {activeTab === "supplierContracts" && buildingId && (
             <SupplierContractPerformance
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "facilityEquipment" && buildingId && (
+            <FacilityEquipment
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "duesTransparency" && buildingId && (
+            <DuesTransparency
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "serviceRequests" && buildingId && (
+            <ResidentServiceRequests
               buildingId={buildingId}
               isOwner={isOwner}
               t={t as any}
