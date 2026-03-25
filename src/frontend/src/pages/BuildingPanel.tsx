@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Award,
   BarChart2,
   Bell,
   BookOpen,
@@ -18,6 +19,7 @@ import {
   Flame,
   Gauge,
   HardHat,
+  Heart,
   HelpCircle,
   Home,
   Image,
@@ -93,6 +95,7 @@ import CommonAreaReservation from "./CommonAreaReservation";
 import ComplaintBox from "./ComplaintBox";
 import DepotManagement from "./DepotManagement";
 import DigitalBulletin from "./DigitalBulletin";
+import DisabledElderlySupport from "./DisabledElderlySupport";
 import DocumentManagement from "./DocumentManagement";
 import DuesPaymentPlan from "./DuesPaymentPlan";
 import DuesTracking from "./DuesTracking";
@@ -130,6 +133,7 @@ import SecurityIncidents from "./SecurityIncidents";
 import ServiceProviders from "./ServiceProviders";
 import StaffManagement from "./StaffManagement";
 import SubscriptionTracking from "./SubscriptionTracking";
+import SupplierContractPerformance from "./SupplierContractPerformance";
 import SurveyManagement from "./SurveyManagement";
 import VehicleParking from "./VehicleParking";
 import VisitorManagement from "./VisitorManagement";
@@ -761,6 +765,18 @@ export default function BuildingPanel() {
       icon: Car,
       show: isOwner || hasPermission("manage_users"),
     },
+    {
+      key: "disabledSupport",
+      label: "Engelli & Yaşlı Destek",
+      icon: Heart,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "supplierContracts",
+      label: "Tedarikçi Sözleşme",
+      icon: Award,
+      show: isOwner || hasPermission("manage_users"),
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -900,6 +916,8 @@ export default function BuildingPanel() {
                     "election",
                     "residentTasks",
                     "parkingAllocation",
+                    "disabledSupport",
+                    "supplierContracts",
                   ],
                 },
               ];
@@ -2563,6 +2581,20 @@ export default function BuildingPanel() {
           )}
           {activeTab === "parkingAllocation" && buildingId && (
             <ParkingAllocation
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "disabledSupport" && buildingId && (
+            <DisabledElderlySupport
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "supplierContracts" && buildingId && (
+            <SupplierContractPerformance
               buildingId={buildingId}
               isOwner={isOwner}
               t={t as any}
