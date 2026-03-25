@@ -477,7 +477,6 @@ export default function ComplaintBox({
                   />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {catStats.map((entry) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: recharts Cell by name
                       <Cell key={entry.name} fill={entry.fill} />
                     ))}
                   </Bar>

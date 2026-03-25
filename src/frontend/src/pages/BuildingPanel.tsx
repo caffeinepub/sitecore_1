@@ -8,34 +8,44 @@ import {
   CalendarClock,
   Car,
   Check,
+  CheckSquare,
   ChevronDown,
   ChevronUp,
   ClipboardList,
   Copy,
   CreditCard,
   FileText,
+  Flame,
   Gauge,
   HardHat,
   HelpCircle,
   Home,
+  Image,
+  KeyRound as Key,
+  Leaf,
   ListOrdered,
   MapPin,
   Megaphone,
   MessageSquare,
   MessagesSquare,
+  Newspaper,
   Package,
+  PawPrint,
   Phone,
   PieChart,
   PiggyBank,
   QrCode,
   Receipt,
+  Scale,
   ScrollText,
   Search,
   Settings,
   Shield,
   ShieldCheck,
+  Smile,
   Sparkles,
   Store,
+  TrendingDown,
   TrendingUp,
   Truck,
   User,
@@ -68,9 +78,12 @@ import type {
   Role,
   UserWithRoles,
 } from "../types";
+import AccessKeyManagement from "./AccessKeyManagement";
 import ApartmentManagement from "./ApartmentManagement";
+import ApartmentValuation from "./ApartmentValuation";
 import BudgetAccounting from "./BudgetAccounting";
 import BudgetPlanning from "./BudgetPlanning";
+import BuildingMediaArchive from "./BuildingMediaArchive";
 import BuildingRules from "./BuildingRules";
 import BuildingSettings from "./BuildingSettings";
 import BulletinBoard from "./BulletinBoard";
@@ -78,25 +91,41 @@ import CleaningSchedule from "./CleaningSchedule";
 import CommitteeManagement from "./CommitteeManagement";
 import CommonAreaReservation from "./CommonAreaReservation";
 import ComplaintBox from "./ComplaintBox";
+import DepotManagement from "./DepotManagement";
+import DigitalBulletin from "./DigitalBulletin";
 import DocumentManagement from "./DocumentManagement";
 import DuesPaymentPlan from "./DuesPaymentPlan";
 import DuesTracking from "./DuesTracking";
+import ElectionManagement from "./ElectionManagement";
+import EmergencyActionPlan from "./EmergencyActionPlan";
 import EmergencyContacts from "./EmergencyContacts";
 import EnergyEfficiency from "./EnergyEfficiency";
 import ExpenseTracking from "./ExpenseTracking";
+import GuestParking from "./GuestParking";
+import HeatingCostDistribution from "./HeatingCostDistribution";
 import HelpCenter from "./HelpCenter";
 import InsuranceWarranty from "./InsuranceWarranty";
+import InvoiceTracking from "./InvoiceTracking";
+import LegalDebtTracking from "./LegalDebtTracking";
 import LostFound from "./LostFound";
 import MaintenanceSchedule from "./MaintenanceSchedule";
+import ManagementActivityReport from "./ManagementActivityReport";
 import MeetingManagement from "./MeetingManagement";
 import MeterTracking from "./MeterTracking";
 import MovingManagement from "./MovingManagement";
 import NeighborForum from "./NeighborForum";
 import NotificationCenter from "./NotificationCenter";
 import PackageTracking from "./PackageTracking";
+import ParkingAllocation from "./ParkingAllocation";
+import PetManagement from "./PetManagement";
 import ProfileSettings from "./ProfileSettings";
+import ProjectManagement from "./ProjectManagement";
 import RenovationPermits from "./RenovationPermits";
+import RepairQuoteManagement from "./RepairQuoteManagement";
 import ReportingCenter from "./ReportingCenter";
+import ResidentOnboarding from "./ResidentOnboarding";
+import ResidentSatisfaction from "./ResidentSatisfaction";
+import ResidentTasks from "./ResidentTasks";
 import SecurityIncidents from "./SecurityIncidents";
 import ServiceProviders from "./ServiceProviders";
 import StaffManagement from "./StaffManagement";
@@ -105,6 +134,8 @@ import SurveyManagement from "./SurveyManagement";
 import VehicleParking from "./VehicleParking";
 import VisitorManagement from "./VisitorManagement";
 import VisitorPreAuth from "./VisitorPreAuth";
+import WasteManagement from "./WasteManagement";
+import WorkOrderManagement from "./WorkOrderManagement";
 
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
@@ -643,6 +674,93 @@ export default function BuildingPanel() {
       icon: ListOrdered,
       show: isOwner || hasPermission("manage_users"),
     },
+    {
+      key: "petManagement",
+      label: "Evcil Hayvanlar",
+      icon: PawPrint,
+      show: true,
+    },
+    {
+      key: "legalDebt",
+      label: "Hukuki Borç Takibi",
+      icon: Scale,
+      show: isOwner,
+    },
+    { key: "guestParking", label: "Misafir Otopark", icon: Car, show: true },
+    { key: "mediaArchive", label: "Medya Arşivi", icon: Image, show: true },
+    {
+      key: "projectManagement",
+      label: "Proje Yönetimi",
+      icon: HardHat,
+      show: true,
+    },
+    { key: "election", label: "Oy & Seçim", icon: Vote, show: true },
+    {
+      key: "digitalBulletin",
+      label: "Dijital Bülten",
+      icon: Newspaper,
+      show: true,
+    },
+    {
+      key: "depot",
+      label: "Depo & Malzeme",
+      icon: Package,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "residentOnboarding",
+      label: "Sakin Onboarding",
+      icon: UserCheck,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "accessKeys",
+      label: "Anahtar Yönetimi",
+      icon: Key,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "workOrders",
+      label: "İş Emri Yönetimi",
+      icon: ClipboardList,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "invoiceTracking",
+      label: "Fatura Takibi",
+      icon: Receipt,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "repairQuotes",
+      label: "Teklif Yu00f6netimi",
+      icon: FileText,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "heatingCost",
+      label: "Isu0131nma Gider Pay.",
+      icon: Flame,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "activityReport",
+      label: "Faaliyet Raporu",
+      icon: BarChart2,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "residentTasks",
+      label: "Gönüllü Görevler",
+      icon: CheckSquare,
+      show: true,
+    },
+    {
+      key: "parkingAllocation",
+      label: "Park Tahsis Yönetimi",
+      icon: Car,
+      show: isOwner || hasPermission("manage_users"),
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -702,6 +820,7 @@ export default function BuildingPanel() {
                     "moving",
                     "committee",
                     "renovationPermits",
+                    "activityReport",
                   ],
                 },
                 {
@@ -716,6 +835,8 @@ export default function BuildingPanel() {
                     "reporting",
                     "budgetPlanning",
                     "duesPaymentPlan",
+                    "legalDebt",
+                    "heatingCost",
                   ],
                 },
                 {
@@ -726,6 +847,7 @@ export default function BuildingPanel() {
                     "notifications",
                     "surveys",
                     "bulletin",
+                    "digitalBulletin",
                   ],
                 },
                 {
@@ -737,6 +859,7 @@ export default function BuildingPanel() {
                     "packages",
                     "lostFound",
                     "visitorPreAuth",
+                    "emergencyPlan",
                   ],
                 },
                 {
@@ -750,6 +873,8 @@ export default function BuildingPanel() {
                     "energy",
                     "staffMgmt",
                     "cleaning",
+                    "projectManagement",
+                    "repairQuotes",
                   ],
                 },
                 {
@@ -766,6 +891,15 @@ export default function BuildingPanel() {
                     "buildingRules",
                     "forum",
                     "helpCenter",
+                    "residentSatisfaction",
+                    "apartmentValuation",
+                    "wasteManagement",
+                    "petManagement",
+                    "guestParking",
+                    "mediaArchive",
+                    "election",
+                    "residentTasks",
+                    "parkingAllocation",
                   ],
                 },
               ];
@@ -829,229 +963,392 @@ export default function BuildingPanel() {
               <h2 className="text-xl font-bold text-[#0E1116] mb-6">
                 {t.overview}
               </h2>
-              {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
+              {/* Role detection */}
               {(() => {
-                const apts = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(
-                        `sitecore_apartments_${buildingId}`,
-                      ) || "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
-                const survs = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(`sitecore_surveys_${buildingId}`) ||
-                        "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
-                const activeSurveys = survs.filter(
-                  (s: any) => s.isActive,
-                ).length;
-                return (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                      <p className="text-3xl font-bold text-[#0B1B2E]">
-                        {users.length}
-                      </p>
-                      <p className="text-[#3A4654] text-sm mt-1">
-                        {t.totalUsers}
-                      </p>
+                const isManager =
+                  isOwner ||
+                  hasPermission("manage_users") ||
+                  hasPermission("admin");
+                const isStaff = hasPermission("view_maintenance") && !isManager;
+                const isResident = !isManager && !isStaff;
+                if (isResident) {
+                  // Resident personalized panel
+                  const dues = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(`sitecore_dues_${buildingId}`) ||
+                          "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const unpaidDues = dues.filter(
+                    (d: any) => d.status === "overdue" || d.status === "unpaid",
+                  ).length;
+                  const packages = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(
+                          `sitecore_packages_${buildingId}`,
+                        ) || "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const pendingPkgs = packages.filter(
+                    (p: any) =>
+                      p.status !== "delivered" && p.status !== "teslim edildi",
+                  ).length;
+                  const reservations = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(
+                          `sitecore_reservations_${buildingId}`,
+                        ) || "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const myReservations = reservations.filter(
+                    (r: any) => r.userId === userId || r.createdBy === userId,
+                  ).length;
+                  return (
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-[#0B1B2E] to-[#1A3A5C] rounded-2xl p-5 text-white">
+                        <p className="text-lg font-semibold">
+                          Hoş geldiniz! 👋
+                        </p>
+                        <p className="text-sm text-white/70 mt-1">
+                          {building?.name} —{" "}
+                          {new Date().toLocaleDateString("tr-TR", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                          })}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div
+                          className={`rounded-2xl p-5 border ${unpaidDues > 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}
+                        >
+                          <p
+                            className="text-2xl font-bold"
+                            style={{
+                              color: unpaidDues > 0 ? "#dc2626" : "#16a34a",
+                            }}
+                          >
+                            {unpaidDues > 0 ? unpaidDues : "✓"}
+                          </p>
+                          <p
+                            className="text-sm mt-1"
+                            style={{
+                              color: unpaidDues > 0 ? "#b91c1c" : "#15803d",
+                            }}
+                          >
+                            {unpaidDues > 0
+                              ? "Ödenmemiş Aidat"
+                              : "Aidatlarınız güncel"}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="text-2xl font-bold text-[#4A90D9]">
+                            {announcements.length}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Aktif Duyuru
+                          </p>
+                        </div>
+                        <div
+                          className={`rounded-2xl p-5 border ${pendingPkgs > 0 ? "bg-amber-50 border-amber-200" : "bg-white border-[#E5EAF2]"}`}
+                        >
+                          <p
+                            className={`text-2xl font-bold ${pendingPkgs > 0 ? "text-amber-600" : "text-[#3A4654]"}`}
+                          >
+                            {pendingPkgs}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Bekleyen Kargo
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="text-2xl font-bold text-purple-600">
+                            {myReservations}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Rezervasyonlarım
+                          </p>
+                        </div>
+                      </div>
+                      {announcements.length > 0 && (
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="font-semibold text-[#0E1116] mb-3">
+                            📢 Son Duyurular
+                          </p>
+                          <div className="space-y-2">
+                            {announcements.slice(0, 3).map((ann: any) => (
+                              <div
+                                key={ann.id}
+                                className="text-sm text-[#3A4654] border-b border-[#F3F6FB] pb-2 last:border-0 last:pb-0"
+                              >
+                                <p className="font-medium text-[#0E1116]">
+                                  {ann.title}
+                                </p>
+                                <p className="text-xs text-[#6B7A8D] mt-0.5">
+                                  {ann.date ||
+                                    ann.createdAt?.split("T")[0] ||
+                                    ""}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                      <p className="text-3xl font-bold text-[#4A90D9]">
-                        {announcements.length}
-                      </p>
-                      <p className="text-[#3A4654] text-sm mt-1">
-                        {t.totalAnnouncements}
-                      </p>
+                  );
+                }
+                if (isStaff) {
+                  const today = new Date().toISOString().split("T")[0];
+                  const shifts = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(
+                          `sitecore_shift_log_${buildingId}`,
+                        ) || "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const todayShifts = shifts.filter(
+                    (s: any) => s.date === today,
+                  );
+                  const incidents = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(
+                          `sitecore_incidents_${buildingId}`,
+                        ) || "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const openIncidents = incidents.filter(
+                    (i: any) => i.status !== "closed",
+                  ).length;
+                  const cleaning = (() => {
+                    try {
+                      return JSON.parse(
+                        localStorage.getItem(
+                          `sitecore_cleaning_${buildingId}`,
+                        ) || "[]",
+                      );
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  const todayCleaning = cleaning.filter(
+                    (c: any) =>
+                      c.date === today ||
+                      c.day ===
+                        new Date().toLocaleDateString("tr-TR", {
+                          weekday: "long",
+                        }),
+                  ).length;
+                  const assignedMaint = maintenance.filter(
+                    (m: any) =>
+                      m.technicianId === userId ||
+                      (m.assignee && m.assignee === userId),
+                  ).length;
+                  return (
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-[#1A3A5C] to-[#0B1B2E] rounded-2xl p-5 text-white">
+                        <p className="text-lg font-semibold">Görev Panosu 🛡️</p>
+                        <p className="text-sm text-white/70 mt-1">
+                          {new Date().toLocaleDateString("tr-TR", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                          })}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div
+                          className={`rounded-2xl p-5 border ${openIncidents > 0 ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200"}`}
+                        >
+                          <p
+                            className={`text-2xl font-bold ${openIncidents > 0 ? "text-red-600" : "text-green-600"}`}
+                          >
+                            {openIncidents}
+                          </p>
+                          <p
+                            className="text-sm mt-1"
+                            style={{
+                              color: openIncidents > 0 ? "#b91c1c" : "#15803d",
+                            }}
+                          >
+                            Açık Olay
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="text-2xl font-bold text-amber-600">
+                            {assignedMaint}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Atanan Arıza
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="text-2xl font-bold text-[#4A90D9]">
+                            {todayCleaning}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Bugün Temizlik Görevi
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="text-2xl font-bold text-purple-600">
+                            {todayShifts.length}
+                          </p>
+                          <p className="text-sm text-[#3A4654] mt-1">
+                            Bugün Nöbet Devri
+                          </p>
+                        </div>
+                      </div>
+                      {todayShifts.length > 0 && (
+                        <div className="bg-white rounded-2xl p-5 border border-[#E5EAF2]">
+                          <p className="font-semibold text-[#0E1116] mb-3">
+                            🕐 Bugünün Nöbet Devri
+                          </p>
+                          <div className="space-y-2">
+                            {todayShifts.map((s: any) => (
+                              <div
+                                key={s.id}
+                                className="text-sm text-[#3A4654] flex justify-between"
+                              >
+                                <span>
+                                  {s.time} — {s.incoming} ↔ {s.outgoing}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                      <p className="text-3xl font-bold text-[#F2A23A]">
-                        {maintenance.length}
-                      </p>
-                      <p className="text-[#3A4654] text-sm mt-1">
-                        {t.totalMaintenance}
-                      </p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                      <p className="text-3xl font-bold text-green-600">
-                        {apts.length}
-                      </p>
-                      <p className="text-[#3A4654] text-sm mt-1">
-                        {t.totalApartments}
-                      </p>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                      <p className="text-3xl font-bold text-purple-600">
-                        {activeSurveys}
-                      </p>
-                      <p className="text-[#3A4654] text-sm mt-1">
-                        {t.activeSurveys}
-                      </p>
-                    </div>
-                  </div>
-                );
+                  );
+                }
+                return null; // isManager falls through to existing content below
               })()}
+              {/* Admin/Manager content */}
               {(() => {
-                const duesData = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(`sitecore_dues_${buildingId}`) ||
-                        "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
-                const overdueCount = duesData.filter(
-                  (d: any) => d.status === "overdue",
-                ).length;
-                const complaintsData = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(
-                        `sitecore_complaints_${buildingId}`,
-                      ) || "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
-                const openComplaints = complaintsData.filter(
-                  (c: any) =>
-                    c.status === "open" || c.status === "pending" || !c.status,
-                ).length;
-                const reservationsData = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(
-                        `sitecore_reservations_${buildingId}`,
-                      ) || "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
-                const pendingReservations = reservationsData.filter(
-                  (r: any) => r.status === "pending",
-                ).length;
-                const apartmentsData = (() => {
-                  try {
-                    return JSON.parse(
-                      localStorage.getItem(
-                        `sitecore_apartments_${buildingId}`,
-                      ) || "[]",
-                    );
-                  } catch {
-                    return [];
-                  }
-                })();
+                const isManager =
+                  isOwner ||
+                  hasPermission("manage_users") ||
+                  hasPermission("admin");
+                if (!isManager) return null;
                 return (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Building2 className="w-5 h-5 text-[#4A90D9]" />
-                        </div>
-                        <p className="text-3xl font-bold text-[#0B1B2E]">
-                          {apartmentsData.length}
-                        </p>
-                        <p className="text-sm text-[#3A4654] mt-1">
-                          Toplam Daire
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-red-100">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CreditCard className="w-5 h-5 text-red-500" />
-                        </div>
-                        <p className="text-3xl font-bold text-red-600">
-                          {overdueCount}
-                        </p>
-                        <p className="text-sm text-[#3A4654] mt-1">
-                          Geciken Aidat
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-yellow-100">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MessageSquare className="w-5 h-5 text-yellow-500" />
-                        </div>
-                        <p className="text-3xl font-bold text-yellow-600">
-                          {openComplaints}
-                        </p>
-                        <p className="text-sm text-[#3A4654] mt-1">
-                          Açık Şikayet
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-2xl p-5 shadow-sm border border-orange-100">
-                        <div className="flex items-center gap-2 mb-2">
-                          <MapPin className="w-5 h-5 text-orange-500" />
-                        </div>
-                        <p className="text-3xl font-bold text-orange-600">
-                          {pendingReservations}
-                        </p>
-                        <p className="text-sm text-[#3A4654] mt-1">
-                          Bekleyen Rezervasyon
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("dues")}
-                        className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
-                      >
-                        💰 Aidat Takibi
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("complaints")}
-                        className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
-                      >
-                        💬 Şikayet Kutusu
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("commonAreas")}
-                        className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
-                      >
-                        📅 Rezervasyonlar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("reporting")}
-                        className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
-                        data-ocid="overview.secondary_button"
-                      >
-                        📊 Raporlama
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("committee")}
-                        className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
-                        data-ocid="overview.secondary_button"
-                      >
-                        🏛️ Kurul
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("subscriptions")}
-                        className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
-                        data-ocid="overview.secondary_button"
-                      >
-                        📄 Sözleşmeler
-                      </button>
-                    </div>
-                    {/* Health Score */}
+                  <div>
+                    {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
                     {(() => {
-                      const duesForScore = (() => {
+                      const apts = (() => {
+                        try {
+                          return JSON.parse(
+                            localStorage.getItem(
+                              `sitecore_apartments_${buildingId}`,
+                            ) || "[]",
+                          );
+                        } catch {
+                          return [];
+                        }
+                      })();
+                      const survs = (() => {
+                        try {
+                          return JSON.parse(
+                            localStorage.getItem(
+                              `sitecore_surveys_${buildingId}`,
+                            ) || "[]",
+                          );
+                        } catch {
+                          return [];
+                        }
+                      })();
+                      const activeSurveys = survs.filter(
+                        (s: any) => s.isActive,
+                      ).length;
+                      return (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                            <p className="text-3xl font-bold text-[#0B1B2E]">
+                              {users.length}
+                            </p>
+                            <p className="text-[#3A4654] text-sm mt-1">
+                              {t.totalUsers}
+                            </p>
+                          </div>
+                          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                            <p className="text-3xl font-bold text-[#4A90D9]">
+                              {announcements.length}
+                            </p>
+                            <p className="text-[#3A4654] text-sm mt-1">
+                              {t.totalAnnouncements}
+                            </p>
+                          </div>
+                          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                            <p className="text-3xl font-bold text-[#F2A23A]">
+                              {maintenance.length}
+                            </p>
+                            <p className="text-[#3A4654] text-sm mt-1">
+                              {t.totalMaintenance}
+                            </p>
+                          </div>
+                          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                            <p className="text-3xl font-bold text-green-600">
+                              {apts.length}
+                            </p>
+                            <p className="text-[#3A4654] text-sm mt-1">
+                              {t.totalApartments}
+                            </p>
+                          </div>
+                          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                            <p className="text-3xl font-bold text-purple-600">
+                              {activeSurveys}
+                            </p>
+                            <p className="text-[#3A4654] text-sm mt-1">
+                              {t.activeSurveys}
+                            </p>
+                          </div>
+                          {(() => {
+                            try {
+                              const incs = JSON.parse(
+                                localStorage.getItem(
+                                  `sitecore_incidents_${buildingId}`,
+                                ) || "[]",
+                              );
+                              const openIncs = incs.filter(
+                                (i: any) => i.status !== "closed",
+                              ).length;
+                              return (
+                                <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-100">
+                                  <p className="text-3xl font-bold text-red-600">
+                                    {openIncs}
+                                  </p>
+                                  <p className="text-[#3A4654] text-sm mt-1">
+                                    Açık Arıza/Olay
+                                  </p>
+                                </div>
+                              );
+                            } catch {
+                              return null;
+                            }
+                          })()}
+                        </div>
+                      );
+                    })()}
+                    {(() => {
+                      const duesData = (() => {
                         try {
                           return JSON.parse(
                             localStorage.getItem(
@@ -1062,18 +1359,10 @@ export default function BuildingPanel() {
                           return [];
                         }
                       })();
-                      const maintForScore = (() => {
-                        try {
-                          return JSON.parse(
-                            localStorage.getItem(
-                              `sitecore_maintenance_${buildingId}`,
-                            ) || "[]",
-                          );
-                        } catch {
-                          return maintenance;
-                        }
-                      })();
-                      const complaintsForScore = (() => {
+                      const overdueCount = duesData.filter(
+                        (d: any) => d.status === "overdue",
+                      ).length;
+                      const complaintsData = (() => {
                         try {
                           return JSON.parse(
                             localStorage.getItem(
@@ -1084,7 +1373,13 @@ export default function BuildingPanel() {
                           return [];
                         }
                       })();
-                      const resForScore = (() => {
+                      const openComplaints = complaintsData.filter(
+                        (c: any) =>
+                          c.status === "open" ||
+                          c.status === "pending" ||
+                          !c.status,
+                      ).length;
+                      const reservationsData = (() => {
                         try {
                           return JSON.parse(
                             localStorage.getItem(
@@ -1095,159 +1390,329 @@ export default function BuildingPanel() {
                           return [];
                         }
                       })();
-                      const overdueForScore = duesForScore.filter(
-                        (d: any) => d.status === "overdue",
+                      const pendingReservations = reservationsData.filter(
+                        (r: any) => r.status === "pending",
                       ).length;
-                      const pendingMaintForScore = maintForScore.filter
-                        ? maintForScore.filter(
-                            (m: any) =>
-                              m.status &&
-                              ("pending" in m.status || m.status === "pending"),
-                          ).length
-                        : maintenance.filter((m) => "pending" in m.status)
-                            .length;
-                      const resolvedComplaints = complaintsForScore.filter(
-                        (c: any) =>
-                          c.status === "resolved" || c.status === "çözümlendi",
-                      ).length;
-                      const totalComplaints = complaintsForScore.length;
-                      const approvedRes = resForScore.filter(
-                        (r: any) => r.status === "approved",
-                      ).length;
-                      const totalRes = resForScore.length;
-                      const s1 =
-                        (1 -
-                          overdueForScore / Math.max(duesForScore.length, 1)) *
-                        25;
-                      const s2 =
-                        (1 -
-                          pendingMaintForScore /
-                            Math.max(maintenance.length, 1)) *
-                        25;
-                      const s3 =
-                        totalComplaints === 0
-                          ? 25
-                          : (resolvedComplaints / totalComplaints) * 25;
-                      const s4 =
-                        totalRes === 0 ? 25 : (approvedRes / totalRes) * 25;
-                      const score = Math.round(s1 + s2 + s3 + s4);
-                      const scoreColor =
-                        score >= 80
-                          ? "text-green-600"
-                          : score >= 60
-                            ? "text-yellow-600"
-                            : "text-red-600";
-                      const scoreBg =
-                        score >= 80
-                          ? "bg-green-50 border-green-200"
-                          : score >= 60
-                            ? "bg-yellow-50 border-yellow-200"
-                            : "bg-red-50 border-red-200";
+                      const apartmentsData = (() => {
+                        try {
+                          return JSON.parse(
+                            localStorage.getItem(
+                              `sitecore_apartments_${buildingId}`,
+                            ) || "[]",
+                          );
+                        } catch {
+                          return [];
+                        }
+                      })();
                       return (
-                        <div
-                          className={`mt-4 rounded-2xl p-5 shadow-sm border ${scoreBg}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold text-[#0E1116] mb-1">
-                                🏥 Bina Sağlık Skoru
-                              </h3>
-                              <div className="grid grid-cols-2 gap-x-6 gap-y-1 mt-2 text-xs text-[#6B7A8D]">
-                                <span>
-                                  💰 Aidat durumu: {Math.round(s1)}/25
-                                </span>
-                                <span>🔧 Arıza oranı: {Math.round(s2)}/25</span>
-                                <span>
-                                  💬 Şikayet çözümü: {Math.round(s3)}/25
-                                </span>
-                                <span>📅 Rezervasyon: {Math.round(s4)}/25</span>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2]">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Building2 className="w-5 h-5 text-[#4A90D9]" />
                               </div>
+                              <p className="text-3xl font-bold text-[#0B1B2E]">
+                                {apartmentsData.length}
+                              </p>
+                              <p className="text-sm text-[#3A4654] mt-1">
+                                Toplam Daire
+                              </p>
                             </div>
-                            <div className="text-center ml-4">
-                              <p className={`text-5xl font-bold ${scoreColor}`}>
-                                {score}
+                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-red-100">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CreditCard className="w-5 h-5 text-red-500" />
+                              </div>
+                              <p className="text-3xl font-bold text-red-600">
+                                {overdueCount}
                               </p>
-                              <p className="text-xs text-[#6B7A8D] mt-1">
-                                / 100
+                              <p className="text-sm text-[#3A4654] mt-1">
+                                Geciken Aidat
                               </p>
+                            </div>
+                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-yellow-100">
+                              <div className="flex items-center gap-2 mb-2">
+                                <MessageSquare className="w-5 h-5 text-yellow-500" />
+                              </div>
+                              <p className="text-3xl font-bold text-yellow-600">
+                                {openComplaints}
+                              </p>
+                              <p className="text-sm text-[#3A4654] mt-1">
+                                Açık Şikayet
+                              </p>
+                            </div>
+                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-orange-100">
+                              <div className="flex items-center gap-2 mb-2">
+                                <MapPin className="w-5 h-5 text-orange-500" />
+                              </div>
+                              <p className="text-3xl font-bold text-orange-600">
+                                {pendingReservations}
+                              </p>
+                              <p className="text-sm text-[#3A4654] mt-1">
+                                Bekleyen Rezervasyon
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("dues")}
+                              className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
+                            >
+                              💰 Aidat Takibi
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("complaints")}
+                              className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
+                            >
+                              💬 Şikayet Kutusu
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("commonAreas")}
+                              className="px-4 py-2 bg-[#0B1B2E] text-white text-sm font-medium rounded-full hover:bg-[#112843] transition-colors"
+                            >
+                              📅 Rezervasyonlar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("reporting")}
+                              className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
+                              data-ocid="overview.secondary_button"
+                            >
+                              📊 Raporlama
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("committee")}
+                              className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
+                              data-ocid="overview.secondary_button"
+                            >
+                              🏛️ Kurul
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("subscriptions")}
+                              className="px-4 py-2 bg-[#112843] text-white text-sm font-medium rounded-full hover:bg-[#0B1B2E] transition-colors"
+                              data-ocid="overview.secondary_button"
+                            >
+                              📄 Sözleşmeler
+                            </button>
+                          </div>
+                          {/* Health Score */}
+                          {(() => {
+                            const duesForScore = (() => {
+                              try {
+                                return JSON.parse(
+                                  localStorage.getItem(
+                                    `sitecore_dues_${buildingId}`,
+                                  ) || "[]",
+                                );
+                              } catch {
+                                return [];
+                              }
+                            })();
+                            const maintForScore = (() => {
+                              try {
+                                return JSON.parse(
+                                  localStorage.getItem(
+                                    `sitecore_maintenance_${buildingId}`,
+                                  ) || "[]",
+                                );
+                              } catch {
+                                return maintenance;
+                              }
+                            })();
+                            const complaintsForScore = (() => {
+                              try {
+                                return JSON.parse(
+                                  localStorage.getItem(
+                                    `sitecore_complaints_${buildingId}`,
+                                  ) || "[]",
+                                );
+                              } catch {
+                                return [];
+                              }
+                            })();
+                            const resForScore = (() => {
+                              try {
+                                return JSON.parse(
+                                  localStorage.getItem(
+                                    `sitecore_reservations_${buildingId}`,
+                                  ) || "[]",
+                                );
+                              } catch {
+                                return [];
+                              }
+                            })();
+                            const overdueForScore = duesForScore.filter(
+                              (d: any) => d.status === "overdue",
+                            ).length;
+                            const pendingMaintForScore = maintForScore.filter
+                              ? maintForScore.filter(
+                                  (m: any) =>
+                                    m.status &&
+                                    ("pending" in m.status ||
+                                      m.status === "pending"),
+                                ).length
+                              : maintenance.filter((m) => "pending" in m.status)
+                                  .length;
+                            const resolvedComplaints =
+                              complaintsForScore.filter(
+                                (c: any) =>
+                                  c.status === "resolved" ||
+                                  c.status === "çözümlendi",
+                              ).length;
+                            const totalComplaints = complaintsForScore.length;
+                            const approvedRes = resForScore.filter(
+                              (r: any) => r.status === "approved",
+                            ).length;
+                            const totalRes = resForScore.length;
+                            const s1 =
+                              (1 -
+                                overdueForScore /
+                                  Math.max(duesForScore.length, 1)) *
+                              25;
+                            const s2 =
+                              (1 -
+                                pendingMaintForScore /
+                                  Math.max(maintenance.length, 1)) *
+                              25;
+                            const s3 =
+                              totalComplaints === 0
+                                ? 25
+                                : (resolvedComplaints / totalComplaints) * 25;
+                            const s4 =
+                              totalRes === 0
+                                ? 25
+                                : (approvedRes / totalRes) * 25;
+                            const score = Math.round(s1 + s2 + s3 + s4);
+                            const scoreColor =
+                              score >= 80
+                                ? "text-green-600"
+                                : score >= 60
+                                  ? "text-yellow-600"
+                                  : "text-red-600";
+                            const scoreBg =
+                              score >= 80
+                                ? "bg-green-50 border-green-200"
+                                : score >= 60
+                                  ? "bg-yellow-50 border-yellow-200"
+                                  : "bg-red-50 border-red-200";
+                            return (
+                              <div
+                                className={`mt-4 rounded-2xl p-5 shadow-sm border ${scoreBg}`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h3 className="font-semibold text-[#0E1116] mb-1">
+                                      🏥 Bina Sağlık Skoru
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-x-6 gap-y-1 mt-2 text-xs text-[#6B7A8D]">
+                                      <span>
+                                        💰 Aidat durumu: {Math.round(s1)}/25
+                                      </span>
+                                      <span>
+                                        🔧 Arıza oranı: {Math.round(s2)}/25
+                                      </span>
+                                      <span>
+                                        💬 Şikayet çözümü: {Math.round(s3)}/25
+                                      </span>
+                                      <span>
+                                        📅 Rezervasyon: {Math.round(s4)}/25
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="text-center ml-4">
+                                    <p
+                                      className={`text-5xl font-bold ${scoreColor}`}
+                                    >
+                                      {score}
+                                    </p>
+                                    <p className="text-xs text-[#6B7A8D] mt-1">
+                                      / 100
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                          {/* Recent Activity Feed */}
+                          <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2]">
+                            <h3 className="font-semibold text-[#0E1116] mb-3">
+                              Son İşlemler
+                            </h3>
+                            <div className="space-y-2">
+                              {[
+                                {
+                                  icon: "💰",
+                                  text: "D-12 dairesi aidatını ödedi",
+                                  time: "2 saat önce",
+                                },
+                                {
+                                  icon: "🔧",
+                                  text: "A-3 arıza bildirimi oluşturuldu: Su tesisatı sorunu",
+                                  time: "4 saat önce",
+                                },
+                                {
+                                  icon: "📦",
+                                  text: "B-7 için kargo teslim alındı",
+                                  time: "Dün, 16:45",
+                                },
+                                {
+                                  icon: "👤",
+                                  text: "Yeni sakin C-8 daireye kayıt oldu",
+                                  time: "Dün, 11:20",
+                                },
+                                {
+                                  icon: "📢",
+                                  text: "Yönetim duyurusu yayınlandı: Asansör bakımı",
+                                  time: "2 gün önce",
+                                },
+                              ].map((item) => (
+                                <div
+                                  key={item.text}
+                                  className="flex items-center gap-3 py-2 border-b border-[#F3F6FB] last:border-0"
+                                >
+                                  <span className="text-lg">{item.icon}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-[#0E1116] truncate">
+                                      {item.text}
+                                    </p>
+                                  </div>
+                                  <span className="text-xs text-[#6B7A8D] flex-shrink-0">
+                                    {item.time}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>
                       );
                     })()}
-                    {/* Recent Activity Feed */}
-                    <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2]">
-                      <h3 className="font-semibold text-[#0E1116] mb-3">
-                        Son İşlemler
-                      </h3>
-                      <div className="space-y-2">
-                        {[
-                          {
-                            icon: "💰",
-                            text: "D-12 dairesi aidatını ödedi",
-                            time: "2 saat önce",
-                          },
-                          {
-                            icon: "🔧",
-                            text: "A-3 arıza bildirimi oluşturuldu: Su tesisatı sorunu",
-                            time: "4 saat önce",
-                          },
-                          {
-                            icon: "📦",
-                            text: "B-7 için kargo teslim alındı",
-                            time: "Dün, 16:45",
-                          },
-                          {
-                            icon: "👤",
-                            text: "Yeni sakin C-8 daireye kayıt oldu",
-                            time: "Dün, 11:20",
-                          },
-                          {
-                            icon: "📢",
-                            text: "Yönetim duyurusu yayınlandı: Asansör bakımı",
-                            time: "2 gün önce",
-                          },
-                        ].map((item) => (
-                          <div
-                            key={item.text}
-                            className="flex items-center gap-3 py-2 border-b border-[#F3F6FB] last:border-0"
-                          >
-                            <span className="text-lg">{item.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-[#0E1116] truncate">
-                                {item.text}
-                              </p>
-                            </div>
-                            <span className="text-xs text-[#6B7A8D] flex-shrink-0">
-                              {item.time}
-                            </span>
-                          </div>
-                        ))}
+                    {myRoleIds.length > 0 && (
+                      <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
+                        <h3 className="font-semibold text-[#0E1116] mb-3">
+                          {t.yourRole}
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {myRoleIds.map((rid) => {
+                            const role = roles.find((r) => r.id === rid);
+                            return role ? (
+                              <Badge
+                                key={rid}
+                                className="bg-[#F1F4F8] text-[#0E1116] border-[#E5EAF2]"
+                              >
+                                {role.name}
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 );
               })()}
-              {myRoleIds.length > 0 && (
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2]">
-                  <h3 className="font-semibold text-[#0E1116] mb-3">
-                    {t.yourRole}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {myRoleIds.map((rid) => {
-                      const role = roles.find((r) => r.id === rid);
-                      return role ? (
-                        <Badge
-                          key={rid}
-                          className="bg-[#F1F4F8] text-[#0E1116] border-[#E5EAF2]"
-                        >
-                          {role.name}
-                        </Badge>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -1978,6 +2443,129 @@ export default function BuildingPanel() {
               userId={userId || ""}
               isOwner={isOwner}
               t={t}
+            />
+          )}
+          {activeTab === "emergencyPlan" && buildingId && (
+            <EmergencyActionPlan
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t}
+            />
+          )}
+          {activeTab === "residentSatisfaction" && buildingId && (
+            <ResidentSatisfaction buildingId={buildingId} t={t} />
+          )}
+          {activeTab === "apartmentValuation" && buildingId && (
+            <ApartmentValuation buildingId={buildingId} t={t} />
+          )}
+          {activeTab === "wasteManagement" && buildingId && (
+            <WasteManagement buildingId={buildingId} t={t} />
+          )}
+          {activeTab === "petManagement" && buildingId && (
+            <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
+          )}
+          {activeTab === "legalDebt" && buildingId && (
+            <LegalDebtTracking
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t}
+            />
+          )}
+          {activeTab === "guestParking" && buildingId && (
+            <GuestParking buildingId={buildingId} isOwner={isOwner} t={t} />
+          )}
+          {activeTab === "mediaArchive" && buildingId && (
+            <BuildingMediaArchive
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t}
+            />
+          )}
+          {activeTab === "projectManagement" && buildingId && (
+            <ProjectManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t}
+            />
+          )}
+          {activeTab === "election" && buildingId && (
+            <ElectionManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t}
+            />
+          )}
+          {activeTab === "digitalBulletin" && buildingId && (
+            <DigitalBulletin buildingId={buildingId} isOwner={isOwner} t={t} />
+          )}
+          {activeTab === "depot" && buildingId && (
+            <DepotManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "residentOnboarding" && buildingId && (
+            <ResidentOnboarding
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "accessKeys" && buildingId && (
+            <AccessKeyManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "workOrders" && buildingId && (
+            <WorkOrderManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "invoiceTracking" && buildingId && (
+            <InvoiceTracking
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "repairQuotes" && buildingId && (
+            <RepairQuoteManagement
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "heatingCost" && buildingId && (
+            <HeatingCostDistribution
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "activityReport" && buildingId && (
+            <ManagementActivityReport
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "residentTasks" && buildingId && (
+            <ResidentTasks
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
+            />
+          )}
+          {activeTab === "parkingAllocation" && buildingId && (
+            <ParkingAllocation
+              buildingId={buildingId}
+              isOwner={isOwner}
+              t={t as any}
             />
           )}
         </main>

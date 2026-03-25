@@ -1,6 +1,9 @@
 import {
   AlertTriangle,
+  Calendar,
   DollarSign,
+  Download,
+  FileSpreadsheet,
   Home,
   Package,
   Printer,
@@ -8,6 +11,7 @@ import {
   TrendingUp,
   Users,
   Wrench,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -25,6 +29,12 @@ import {
 } from "recharts";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import {
   Tabs,
   TabsContent,
@@ -49,7 +59,7 @@ const MONTHLY_DUES_DATA = [
   { ay: "May", tahsilat: 21000, hedef: 22000 },
   { ay: "Haz", tahsilat: 19800, hedef: 22000 },
   { ay: "Tem", tahsilat: 20500, hedef: 22000 },
-  { ay: "Ağu", tahsilat: 17200, hedef: 22000 },
+  { ay: "Аğu", tahsilat: 17200, hedef: 22000 },
   { ay: "Eyl", tahsilat: 21800, hedef: 22000 },
   { ay: "Eki", tahsilat: 22000, hedef: 22000 },
   { ay: "Kas", tahsilat: 19600, hedef: 22000 },
@@ -87,6 +97,54 @@ const OCCUPANCY_DATA = [
   { ay: "Oca", dolu: 38, bos: 2 },
   { ay: "Şub", dolu: 40, bos: 0 },
   { ay: "Mar", dolu: 39, bos: 1 },
+];
+
+const TEMPLATES = [
+  {
+    key: "finansal",
+    title: "Aylık Finansal Özet",
+    desc: "Aidat tahsilatı, gelir-gider ve borç yaşlandırma",
+    icon: DollarSign,
+    color: "text-green-600",
+    rows: [
+      ["Toplam Aidat Hedefi", "₺22.000"],
+      ["Tahsilat (Bu Ay)", "₺22.000"],
+      ["Tahsilat Oranı", "%100"],
+      ["Toplam Gider", "₺18.400"],
+      ["Net Bakiye", "₺3.600"],
+      ["Geciken Ödeme (Daire)", "14"],
+    ],
+  },
+  {
+    key: "teknik",
+    title: "Teknik Durum Raporu",
+    desc: "Bakım tamamlanma, arıza çözüm süreleri ve ekipman durumu",
+    icon: Wrench,
+    color: "text-orange-600",
+    rows: [
+      ["Toplam Arıza Talebi", "28"],
+      ["Tamamlanan", "19 (%68)"],
+      ["Devam Eden", "6 (%22)"],
+      ["Bekleyen", "3 (%10)"],
+      ["Ort. Çözüm Süresi", "4.2 gün"],
+      ["Geciken Bakım", "3"],
+    ],
+  },
+  {
+    key: "memnuniyet",
+    title: "Sakin Memnuniyet Raporu",
+    desc: "NPS skoru, kategori memnuniyeti ve geri bildirim özeti",
+    icon: Users,
+    color: "text-blue-600",
+    rows: [
+      ["NPS Skoru", "72/100"],
+      ["Toplam Geri Bildirim", "34"],
+      ["Ortalama Puan", "4.1/5"],
+      ["Çözüm Oranı", "%87"],
+      ["Aktif Şikayet", "7"],
+      ["Ort. Yanıt Süresi", "4.2 saat"],
+    ],
+  },
 ];
 
 interface KPICardProps {
@@ -137,6 +195,12 @@ function KPICard({
 
 export default function ReportingCenter({ buildingId, t: _t }: Props) {
   const [dateRange, setDateRange] = useState("month");
+  const [dateStart, setDateStart] = useState("");
+  const [dateEnd, setDateEnd] = useState("");
+  const [exportModal, setExportModal] = useState(false);
+  const [exportTemplate, setExportTemplate] = useState<
+    (typeof TEMPLATES)[0] | null
+  >(null);
 
   const apartments = (() => {
     try {
@@ -161,15 +225,17 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
   const totalApartments = apartments.length || 40;
   const occupiedApartments =
     apartments.filter((a: any) => a.status === "occupied").length || 39;
-  const occupancyRate = Math.round(
-    (occupiedApartments / totalApartments) * 100,
-  );
   const pendingPackages =
     packages.filter((p: any) => p.status === "pending").length || 3;
 
+  const openExport = (tpl: (typeof TEMPLATES)[0]) => {
+    setExportTemplate(tpl);
+    setExportModal(true);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-bold text-[#0E1116]">
             Raporlama & Analitik Merkezi
@@ -178,7 +244,8 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
             Bina performans özeti ve detaylı analizler
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Date range quick filter */}
           <div className="flex gap-1 bg-[#F3F6FB] rounded-full p-1">
             {DATE_RANGES.map((r) => (
               <button
@@ -190,10 +257,29 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
                     ? "bg-[#0B1B2E] text-white"
                     : "text-[#6B7A8D] hover:text-[#0E1116]"
                 }`}
+                data-ocid="reporting.tab"
               >
                 {r.label}
               </button>
             ))}
+          </div>
+          {/* Custom date range */}
+          <div className="flex items-center gap-1 border border-[#E5EAF2] rounded-full px-3 py-1.5 bg-white">
+            <Calendar className="w-3.5 h-3.5 text-[#6B7A8D]" />
+            <input
+              type="date"
+              value={dateStart}
+              onChange={(e) => setDateStart(e.target.value)}
+              className="text-xs text-[#3A4654] bg-transparent outline-none w-28"
+              data-ocid="reporting.input"
+            />
+            <span className="text-xs text-[#6B7A8D]">-</span>
+            <input
+              type="date"
+              value={dateEnd}
+              onChange={(e) => setDateEnd(e.target.value)}
+              className="text-xs text-[#3A4654] bg-transparent outline-none w-28"
+            />
           </div>
           <Button
             variant="outline"
@@ -205,7 +291,44 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
             <Printer className="w-4 h-4" />
             Yazdır
           </Button>
+          <Button
+            size="sm"
+            className="gap-2 rounded-full bg-[#0B1B2E] text-white"
+            onClick={() => {
+              setExportTemplate(null);
+              setExportModal(true);
+            }}
+            data-ocid="reporting.secondary_button"
+          >
+            <Download className="w-4 h-4" />
+            Dışa Aktar
+          </Button>
         </div>
+      </div>
+
+      {/* Report Templates */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        {TEMPLATES.map((tpl) => (
+          <button
+            key={tpl.key}
+            type="button"
+            onClick={() => openExport(tpl)}
+            className="bg-white rounded-xl border border-[#E5EAF2] p-4 text-left hover:border-[#4A90D9] hover:shadow-sm transition-all"
+            data-ocid="reporting.button"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <tpl.icon className={`w-5 h-5 ${tpl.color}`} />
+              <p className="font-semibold text-sm text-[#0E1116]">
+                {tpl.title}
+              </p>
+            </div>
+            <p className="text-xs text-[#6B7A8D]">{tpl.desc}</p>
+            <div className="flex items-center gap-1 mt-2 text-xs text-[#4A90D9]">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Raporu Oluştur</span>
+            </div>
+          </button>
+        ))}
       </div>
 
       <Tabs defaultValue="genel">
@@ -226,7 +349,7 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
 
         {/* Genel Özet */}
         <TabsContent value="genel">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
             <KPICard
               label="Toplam Daire"
               value={totalApartments}
@@ -237,13 +360,13 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
               trendValue="+2"
             />
             <KPICard
-              label="Doluluk Oranı"
-              value={`%${occupancyRate}`}
-              icon={Users}
-              color="text-green-600"
-              bgColor="bg-green-50"
-              trend="up"
-              trendValue="+3%"
+              label="Geciken Aidat"
+              value="14"
+              icon={DollarSign}
+              color="text-red-600"
+              bgColor="bg-red-50"
+              trend="down"
+              trendValue="-3"
             />
             <KPICard
               label="Tahsilat Oranı"
@@ -475,7 +598,7 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
                     status: "Çalışıyor",
                     color: "green",
                   },
-                  { name: "Jeneratör", status: "Çalışıyor", color: "green" },
+                  { name: "Jeneratir", status: "Çalışıyor", color: "green" },
                   { name: "Su Pompası", status: "Arızalı", color: "red" },
                   {
                     name: "Güvenlik Sistemi",
@@ -491,13 +614,7 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
                       {eq.name}
                     </span>
                     <Badge
-                      className={`${
-                        eq.color === "green"
-                          ? "bg-green-50 text-green-700"
-                          : eq.color === "orange"
-                            ? "bg-orange-50 text-orange-700"
-                            : "bg-red-50 text-red-700"
-                      } border-0 text-xs`}
+                      className={`${eq.color === "green" ? "bg-green-50 text-green-700" : eq.color === "orange" ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"} border-0 text-xs`}
                     >
                       {eq.status}
                     </Badge>
@@ -590,6 +707,95 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Export Modal */}
+      <Dialog open={exportModal} onOpenChange={setExportModal}>
+        <DialogContent className="max-w-2xl" data-ocid="reporting.dialog">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>
+                {exportTemplate ? exportTemplate.title : "Rapor Seç"}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          {!exportTemplate ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.key}
+                  type="button"
+                  onClick={() => setExportTemplate(tpl)}
+                  className="bg-[#F3F6FB] rounded-xl p-4 text-left hover:bg-[#E5EAF2] transition-colors"
+                >
+                  <tpl.icon className={`w-5 h-5 ${tpl.color} mb-2`} />
+                  <p className="font-semibold text-sm text-[#0E1116]">
+                    {tpl.title}
+                  </p>
+                  <p className="text-xs text-[#6B7A8D] mt-1">{tpl.desc}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-[#6B7A8D]">{exportTemplate.desc}</p>
+              <div className="border border-[#E5EAF2] rounded-xl overflow-hidden">
+                <div className="bg-[#0B1B2E] text-white px-4 py-2 text-sm font-semibold">
+                  {exportTemplate.title} —{" "}
+                  {dateRange === "month"
+                    ? "Bu Ay"
+                    : dateRange === "year"
+                      ? "Bu Yıl"
+                      : dateRange === "3months"
+                        ? "Son 3 Ay"
+                        : "Son 6 Ay"}
+                </div>
+                <table className="w-full text-sm">
+                  <thead className="bg-[#F3F6FB]">
+                    <tr>
+                      <th className="text-left px-4 py-2 text-[#6B7A8D] font-medium">
+                        Gösterge
+                      </th>
+                      <th className="text-right px-4 py-2 text-[#6B7A8D] font-medium">
+                        Değer
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F3F6FB]">
+                    {exportTemplate.rows.map(([label, value], i) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static rows
+                      <tr key={i} className="hover:bg-[#FAFBFD]">
+                        <td className="px-4 py-2.5 text-[#3A4654]">{label}</td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-[#0E1116]">
+                          {value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setExportTemplate(null)}
+                  data-ocid="reporting.cancel_button"
+                >
+                  ← Geri
+                </Button>
+                <Button
+                  className="bg-[#0B1B2E] text-white"
+                  onClick={() => {
+                    setExportModal(false);
+                    setExportTemplate(null);
+                  }}
+                  data-ocid="reporting.confirm_button"
+                >
+                  <Download className="w-4 h-4 mr-2" /> İndir
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

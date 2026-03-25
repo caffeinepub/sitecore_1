@@ -39,6 +39,37 @@ const STATUSES = [
   },
 ];
 
+interface TenantInfo {
+  ownerName: string;
+  ownerPhone: string;
+  ownerTc: string;
+  ownerEmail: string;
+  tenantName: string;
+  tenantPhone: string;
+  tenantTc: string;
+  tenantEmail: string;
+  // Lease
+  leaseStart: string;
+  leaseEnd: string;
+  monthlyRent: string;
+  deposit: string;
+}
+
+const EMPTY_TENANT: TenantInfo = {
+  ownerName: "",
+  ownerPhone: "",
+  ownerTc: "",
+  ownerEmail: "",
+  tenantName: "",
+  tenantPhone: "",
+  tenantTc: "",
+  tenantEmail: "",
+  leaseStart: "",
+  leaseEnd: "",
+  monthlyRent: "",
+  deposit: "",
+};
+
 export default function ApartmentManagement({
   buildingId,
   userId: _userId,
@@ -52,6 +83,11 @@ export default function ApartmentManagement({
   const [detailApt, setDetailApt] = useState<Apartment | null>(null);
   const [editTarget, setEditTarget] = useState<Apartment | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
+  // Tenant info per apartment
+  const [tenantInfoMap, setTenantInfoMap] = useState<
+    Record<string, TenantInfo>
+  >({});
+  const [editingTenant, setEditingTenant] = useState<TenantInfo>(EMPTY_TENANT);
 
   const [form, setForm] = useState({
     number: "",
@@ -65,7 +101,19 @@ export default function ApartmentManagement({
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY(buildingId));
-    if (raw) setApartments(JSON.parse(raw));
+    if (raw) {
+      const apts: Apartment[] = JSON.parse(raw);
+      setApartments(apts);
+      // Load tenant info for all apartments
+      const map: Record<string, TenantInfo> = {};
+      for (const apt of apts) {
+        const tRaw = localStorage.getItem(
+          `sitecore_tenant_${buildingId}_${apt.id}`,
+        );
+        if (tRaw) map[apt.id] = JSON.parse(tRaw);
+      }
+      setTenantInfoMap(map);
+    }
     const dRaw = localStorage.getItem(DUES_KEY(buildingId));
     if (dRaw) setDues(JSON.parse(dRaw));
     const mRaw = localStorage.getItem(MAINT_KEY(buildingId));
@@ -75,6 +123,15 @@ export default function ApartmentManagement({
   const save = (updated: Apartment[]) => {
     setApartments(updated);
     localStorage.setItem(STORAGE_KEY(buildingId), JSON.stringify(updated));
+  };
+
+  const saveTenantInfo = (aptId: string, info: TenantInfo) => {
+    const updated = { ...tenantInfoMap, [aptId]: info };
+    setTenantInfoMap(updated);
+    localStorage.setItem(
+      `sitecore_tenant_${buildingId}_${aptId}`,
+      JSON.stringify(info),
+    );
   };
 
   const resetForm = () =>
@@ -172,6 +229,8 @@ export default function ApartmentManagement({
   const aptMaint = (aptId: string) =>
     maintenance.filter((m: any) => m.apartmentId === aptId);
 
+  const hasTenant = (aptId: string) => !!tenantInfoMap[aptId]?.tenantName;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -266,12 +325,16 @@ export default function ApartmentManagement({
                 <th className="text-left px-4 py-3 text-sm font-semibold text-[#3A4654]">
                   Durum
                 </th>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-[#3A4654]">
+                  Kiracı
+                </th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {filtered.map((apt, idx) => {
                 const st = statusInfo(getStatus(apt));
+                const tenant = hasTenant(apt.id);
                 return (
                   <tr
                     key={apt.id}
@@ -307,9 +370,25 @@ export default function ApartmentManagement({
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
+                      {tenant ? (
+                        <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
+                          Kiracı Var
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-500 border-0 text-xs">
+                          Malik
+                        </Badge>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
                         <Button
-                          onClick={() => setDetailApt(apt)}
+                          onClick={() => {
+                            setDetailApt(apt);
+                            setEditingTenant(
+                              tenantInfoMap[apt.id] || EMPTY_TENANT,
+                            );
+                          }}
                           variant="ghost"
                           size="sm"
                           className="text-[#4A90D9] hover:text-[#3B82C4] h-7 w-7 p-0"
@@ -351,16 +430,20 @@ export default function ApartmentManagement({
       {/* Detail Dialog */}
       {detailApt && (
         <Dialog open={!!detailApt} onOpenChange={() => setDetailApt(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl" data-ocid="apartments.dialog">
             <DialogHeader>
               <DialogTitle>Daire {detailApt.number} - Detay</DialogTitle>
             </DialogHeader>
             <Tabs defaultValue="info">
               <TabsList className="mb-4">
                 <TabsTrigger value="info">Genel</TabsTrigger>
+                <TabsTrigger value="owner">Mal Sahibi</TabsTrigger>
+                <TabsTrigger value="tenant">Kiracı</TabsTrigger>
+                <TabsTrigger value="lease">Kira Sözleşmesi</TabsTrigger>
                 <TabsTrigger value="dues">Aidat Özeti</TabsTrigger>
                 <TabsTrigger value="maint">Bakım Kayıtları</TabsTrigger>
               </TabsList>
+
               <TabsContent value="info">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -393,6 +476,192 @@ export default function ApartmentManagement({
                   </div>
                 </div>
               </TabsContent>
+
+              <TabsContent value="owner">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-[#0E1116] flex items-center gap-2">
+                    <Users className="w-4 h-4" /> Mal Sahibi Bilgileri
+                  </h4>
+                  {(
+                    [
+                      ["ownerName", "Ad Soyad"],
+                      ["ownerPhone", "Telefon"],
+                      ["ownerTc", "TC Kimlik No"],
+                      ["ownerEmail", "E-posta"],
+                    ] as [keyof TenantInfo, string][]
+                  ).map(([field, label]) => (
+                    <div key={field}>
+                      <p className="text-xs text-[#6B7A8D] mb-1">{label}</p>
+                      <Input
+                        value={editingTenant[field]}
+                        onChange={(e) =>
+                          setEditingTenant((p) => ({
+                            ...p,
+                            [field]: e.target.value,
+                          }))
+                        }
+                        placeholder={label}
+                      />
+                    </div>
+                  ))}
+                  {isOwner && (
+                    <Button
+                      onClick={() => {
+                        saveTenantInfo(detailApt.id, editingTenant);
+                      }}
+                      className="w-full bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full"
+                      data-ocid="apartments.save_button"
+                    >
+                      Kaydet
+                    </Button>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="tenant">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-[#0E1116] flex items-center gap-2">
+                    <Users className="w-4 h-4" /> Kiracı Bilgileri
+                  </h4>
+                  {(
+                    [
+                      ["tenantName", "Ad Soyad"],
+                      ["tenantPhone", "Telefon"],
+                      ["tenantTc", "TC Kimlik No"],
+                      ["tenantEmail", "E-posta"],
+                    ] as [keyof TenantInfo, string][]
+                  ).map(([field, label]) => (
+                    <div key={field}>
+                      <p className="text-xs text-[#6B7A8D] mb-1">{label}</p>
+                      <Input
+                        value={editingTenant[field]}
+                        onChange={(e) =>
+                          setEditingTenant((p) => ({
+                            ...p,
+                            [field]: e.target.value,
+                          }))
+                        }
+                        placeholder={label}
+                      />
+                    </div>
+                  ))}
+                  {!editingTenant.tenantName && (
+                    <p className="text-xs text-[#9CA8B4] italic">
+                      Kiracı bilgisi girilmemiş. Daire mal sahibi tarafından
+                      kullanılıyor.
+                    </p>
+                  )}
+                  {isOwner && (
+                    <Button
+                      onClick={() => {
+                        saveTenantInfo(detailApt.id, editingTenant);
+                      }}
+                      className="w-full bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full"
+                      data-ocid="apartments.save_button"
+                    >
+                      Kaydet
+                    </Button>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="lease">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-[#0E1116]">
+                    Kira Sözleşmesi
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-[#6B7A8D] mb-1">
+                        Başlangıç Tarihi
+                      </p>
+                      <Input
+                        type="date"
+                        value={editingTenant.leaseStart}
+                        onChange={(e) =>
+                          setEditingTenant((p) => ({
+                            ...p,
+                            leaseStart: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#6B7A8D] mb-1">
+                        Bitiş Tarihi
+                      </p>
+                      <Input
+                        type="date"
+                        value={editingTenant.leaseEnd}
+                        onChange={(e) =>
+                          setEditingTenant((p) => ({
+                            ...p,
+                            leaseEnd: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#6B7A8D] mb-1">
+                      Aylık Kira Tutarı (₺)
+                    </p>
+                    <Input
+                      type="number"
+                      value={editingTenant.monthlyRent}
+                      onChange={(e) =>
+                        setEditingTenant((p) => ({
+                          ...p,
+                          monthlyRent: e.target.value,
+                        }))
+                      }
+                      placeholder="5000"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#6B7A8D] mb-1">Depozito (₺)</p>
+                    <Input
+                      type="number"
+                      value={editingTenant.deposit}
+                      onChange={(e) =>
+                        setEditingTenant((p) => ({
+                          ...p,
+                          deposit: e.target.value,
+                        }))
+                      }
+                      placeholder="10000"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#6B7A8D] mb-1">
+                      Sözleşme Belgesi
+                    </p>
+                    <label className="flex items-center gap-2 cursor-pointer border border-dashed border-[#D7DEE9] rounded-xl p-3 hover:bg-[#F3F6FB] transition-colors">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="hidden"
+                        onChange={() => {}}
+                      />
+                      <span className="text-sm text-[#4A90D9]">
+                        Dosya seç veya sürükle bırak
+                      </span>
+                    </label>
+                  </div>
+                  {isOwner && (
+                    <Button
+                      onClick={() => {
+                        saveTenantInfo(detailApt.id, editingTenant);
+                      }}
+                      className="w-full bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full"
+                      data-ocid="apartments.save_button"
+                    >
+                      Sözleşmeyi Kaydet
+                    </Button>
+                  )}
+                </div>
+              </TabsContent>
+
               <TabsContent value="dues">
                 {aptDues(detailApt.number).length === 0 ? (
                   <p className="text-center text-[#3A4654] py-6 text-sm">
@@ -422,6 +691,7 @@ export default function ApartmentManagement({
                   </div>
                 )}
               </TabsContent>
+
               <TabsContent value="maint">
                 {aptMaint(detailApt.id).length === 0 ? (
                   <p className="text-center text-[#3A4654] py-6 text-sm">

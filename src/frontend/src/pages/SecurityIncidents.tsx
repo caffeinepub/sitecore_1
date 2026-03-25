@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
+  Camera,
   Clock,
   Grid3X3,
+  MapPin,
   Plus,
   Shield,
   ShieldCheck,
   User,
+  UserCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "../components/ui/badge";
@@ -82,6 +85,135 @@ const ZONES = [
   "Asansör",
 ];
 
+// ---- Shift Log ----
+interface ShiftLog {
+  id: string;
+  date: string;
+  time: string;
+  incoming: string;
+  outgoing: string;
+  notes: string;
+}
+
+const SEED_SHIFT_LOGS: ShiftLog[] = [
+  {
+    id: "sl1",
+    date: "2026-03-25",
+    time: "08:00",
+    incoming: "Kadir Şahin",
+    outgoing: "Murat Acar",
+    notes: "Gece sakin geçti, bir ziyaretçi girişi kaydedildi.",
+  },
+  {
+    id: "sl2",
+    date: "2026-03-24",
+    time: "16:00",
+    incoming: "Murat Acar",
+    outgoing: "Serhat Kaya",
+    notes: "Asansör arızası teknisyene bildirildi.",
+  },
+  {
+    id: "sl3",
+    date: "2026-03-24",
+    time: "08:00",
+    incoming: "Serhat Kaya",
+    outgoing: "Kadir Şahin",
+    notes: "Normal devir, ek not yok.",
+  },
+  {
+    id: "sl4",
+    date: "2026-03-23",
+    time: "16:00",
+    incoming: "Kadir Şahin",
+    outgoing: "Murat Acar",
+    notes: "Otopark B-12 boş bırakıldı, sakin bilgilendirildi.",
+  },
+];
+
+// ---- Camera Zones ----
+interface CameraZone {
+  id: string;
+  zone: string;
+  cameraCount: number;
+  status: "Aktif" | "Bakımda" | "Arızalı";
+}
+
+const SEED_CAMERAS: CameraZone[] = [
+  { id: "cz1", zone: "Giriş", cameraCount: 3, status: "Aktif" },
+  { id: "cz2", zone: "Asansör", cameraCount: 2, status: "Aktif" },
+  { id: "cz3", zone: "Otopark", cameraCount: 4, status: "Aktif" },
+  { id: "cz4", zone: "Bahçe", cameraCount: 2, status: "Bakımda" },
+  { id: "cz5", zone: "1. Kat Koridor", cameraCount: 2, status: "Aktif" },
+  { id: "cz6", zone: "2. Kat Koridor", cameraCount: 2, status: "Aktif" },
+  { id: "cz7", zone: "3. Kat Koridor", cameraCount: 2, status: "Arızalı" },
+  { id: "cz8", zone: "Çatı", cameraCount: 1, status: "Aktif" },
+];
+
+// ---- Patrol Logs ----
+interface PatrolLog {
+  id: string;
+  date: string;
+  time: string;
+  personnel: string;
+  zones: string[];
+  duration: number;
+  notes: string;
+}
+
+const PATROL_ZONES = [
+  "Giriş",
+  "Asansör",
+  "Otopark",
+  "Bahçe",
+  "1. Kat Koridor",
+  "2. Kat Koridor",
+  "3. Kat Koridor",
+  "Çatı",
+];
+
+const SEED_PATROLS: PatrolLog[] = [
+  {
+    id: "p1",
+    date: "2026-03-25",
+    time: "09:00",
+    personnel: "Kadir Şahin",
+    zones: ["Giriş", "Otopark", "Bahçe"],
+    duration: 25,
+    notes: "Her şey normal.",
+  },
+  {
+    id: "p2",
+    date: "2026-03-25",
+    time: "15:00",
+    personnel: "Murat Acar",
+    zones: ["Giriş", "Asansör", "1. Kat Koridor", "2. Kat Koridor"],
+    duration: 30,
+    notes: "2. katta açık kapı tespit edildi, kapatıldı.",
+  },
+  {
+    id: "p3",
+    date: "2026-03-24",
+    time: "10:00",
+    personnel: "Serhat Kaya",
+    zones: ["Giriş", "Otopark", "Çatı"],
+    duration: 20,
+    notes: "Çatı kapısı kilitli kontrol edildi.",
+  },
+  {
+    id: "p4",
+    date: "2026-03-24",
+    time: "18:00",
+    personnel: "Kadir Şahin",
+    zones: ["Giriş", "Bahçe", "3. Kat Koridor"],
+    duration: 22,
+    notes: "Bahçede yabancı şahıs görüldü, gözetlendi, ayrıldı.",
+  },
+];
+
+const SHIFT_KEY = (id: string) => `sitecore_shift_log_${id}`;
+const CAM_KEY = (id: string) => `sitecore_cameras_${id}`;
+const PATROL_KEY = (id: string) => `sitecore_patrols_${id}`;
+
 const SEED_INCIDENTS: Incident[] = [
   {
     id: "i1",
@@ -147,6 +279,32 @@ export default function SecurityIncidents({
     entryTime: "",
     date: new Date().toISOString().split("T")[0],
   });
+
+  // Shift log state
+  const [shiftLogs, setShiftLogs] = useState<ShiftLog[]>([]);
+  const [showShiftDialog, setShowShiftDialog] = useState(false);
+  const [shiftForm, setShiftForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+    time: "08:00",
+    incoming: "",
+    outgoing: "",
+    notes: "",
+  });
+
+  // Camera zones state
+  const [cameraZones, setCameraZones] = useState<CameraZone[]>([]);
+
+  // Patrol log state
+  const [patrolLogs, setPatrolLogs] = useState<PatrolLog[]>([]);
+  const [showPatrolDialog, setShowPatrolDialog] = useState(false);
+  const [patrolForm, setPatrolForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+    time: "09:00",
+    personnel: "",
+    zones: [] as string[],
+    duration: 20,
+    notes: "",
+  });
   useEffect(() => {
     const raw = localStorage.getItem(INC_KEY(buildingId));
     if (raw) setIncidents(JSON.parse(raw));
@@ -156,6 +314,48 @@ export default function SecurityIncidents({
     }
     const vRaw = localStorage.getItem(VIS_KEY(buildingId));
     if (vRaw) setVisitorLogs(JSON.parse(vRaw));
+
+    // Shift logs
+    try {
+      const slRaw = localStorage.getItem(SHIFT_KEY(buildingId));
+      if (slRaw) setShiftLogs(JSON.parse(slRaw));
+      else {
+        setShiftLogs(SEED_SHIFT_LOGS);
+        localStorage.setItem(
+          SHIFT_KEY(buildingId),
+          JSON.stringify(SEED_SHIFT_LOGS),
+        );
+      }
+    } catch {
+      setShiftLogs(SEED_SHIFT_LOGS);
+    }
+
+    // Camera zones
+    try {
+      const camRaw = localStorage.getItem(CAM_KEY(buildingId));
+      if (camRaw) setCameraZones(JSON.parse(camRaw));
+      else {
+        setCameraZones(SEED_CAMERAS);
+        localStorage.setItem(CAM_KEY(buildingId), JSON.stringify(SEED_CAMERAS));
+      }
+    } catch {
+      setCameraZones(SEED_CAMERAS);
+    }
+
+    // Patrol logs
+    try {
+      const patRaw = localStorage.getItem(PATROL_KEY(buildingId));
+      if (patRaw) setPatrolLogs(JSON.parse(patRaw));
+      else {
+        setPatrolLogs(SEED_PATROLS);
+        localStorage.setItem(
+          PATROL_KEY(buildingId),
+          JSON.stringify(SEED_PATROLS),
+        );
+      }
+    } catch {
+      setPatrolLogs(SEED_PATROLS);
+    }
   }, [buildingId]);
 
   const saveInc = (u: Incident[]) => {
@@ -221,6 +421,66 @@ export default function SecurityIncidents({
           : v,
       ),
     );
+  };
+
+  const saveShifts = (u: ShiftLog[]) => {
+    setShiftLogs(u);
+    localStorage.setItem(SHIFT_KEY(buildingId), JSON.stringify(u));
+  };
+  const handleAddShift = () => {
+    if (!shiftForm.incoming.trim() || !shiftForm.outgoing.trim()) return;
+    const sl: ShiftLog = { id: crypto.randomUUID(), ...shiftForm };
+    saveShifts([sl, ...shiftLogs]);
+    setShowShiftDialog(false);
+    setShiftForm({
+      date: new Date().toISOString().split("T")[0],
+      time: "08:00",
+      incoming: "",
+      outgoing: "",
+      notes: "",
+    });
+  };
+
+  const saveCameras = (u: CameraZone[]) => {
+    setCameraZones(u);
+    localStorage.setItem(CAM_KEY(buildingId), JSON.stringify(u));
+  };
+  const cycleCameraStatus = (id: string) => {
+    const cycle: CameraZone["status"][] = ["Aktif", "Bakımda", "Arızalı"];
+    saveCameras(
+      cameraZones.map((c) =>
+        c.id === id
+          ? { ...c, status: cycle[(cycle.indexOf(c.status) + 1) % 3] }
+          : c,
+      ),
+    );
+  };
+
+  const savePatrols = (u: PatrolLog[]) => {
+    setPatrolLogs(u);
+    localStorage.setItem(PATROL_KEY(buildingId), JSON.stringify(u));
+  };
+  const handleAddPatrol = () => {
+    if (!patrolForm.personnel.trim()) return;
+    const pl: PatrolLog = { id: crypto.randomUUID(), ...patrolForm };
+    savePatrols([pl, ...patrolLogs]);
+    setShowPatrolDialog(false);
+    setPatrolForm({
+      date: new Date().toISOString().split("T")[0],
+      time: "09:00",
+      personnel: "",
+      zones: [],
+      duration: 20,
+      notes: "",
+    });
+  };
+  const togglePatrolZone = (zone: string) => {
+    setPatrolForm((prev) => ({
+      ...prev,
+      zones: prev.zones.includes(zone)
+        ? prev.zones.filter((z) => z !== zone)
+        : [...prev.zones, zone],
+    }));
   };
 
   const typeInfo = (type: string) =>
@@ -322,12 +582,15 @@ export default function SecurityIncidents({
       </div>
 
       <Tabs defaultValue="incidents">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 flex flex-wrap gap-1">
           <TabsTrigger value="incidents">Olaylar</TabsTrigger>
           <TabsTrigger value="map">Bölge Haritası</TabsTrigger>
           <TabsTrigger value="visitors">
             Ziyaretçi Logu ({visitorLogs.length})
           </TabsTrigger>
+          <TabsTrigger value="shifts">Nöbet Logu</TabsTrigger>
+          <TabsTrigger value="cameras">Kamera Haritası</TabsTrigger>
+          <TabsTrigger value="patrols">Tur Kaydı</TabsTrigger>
         </TabsList>
 
         <TabsContent value="incidents">
@@ -509,7 +772,417 @@ export default function SecurityIncidents({
             )}
           </div>
         </TabsContent>
+
+        {/* Nöbet Logu */}
+        <TabsContent value="shifts">
+          <div className="flex justify-between items-center mb-4">
+            <p className="font-semibold text-[#0E1116] flex items-center gap-2">
+              <UserCheck className="w-4 h-4" /> Nöbet Devir Logu
+            </p>
+            {isOwnerOrManager && (
+              <Button
+                onClick={() => setShowShiftDialog(true)}
+                size="sm"
+                className="bg-[#0B1B2E] text-white rounded-full gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" /> Devir Ekle
+              </Button>
+            )}
+          </div>
+          {shiftLogs.length === 0 ? (
+            <div className="bg-white rounded-2xl p-10 text-center border border-[#E5EAF2]">
+              <UserCheck className="w-10 h-10 text-[#B0BAC6] mx-auto mb-3" />
+              <p className="text-[#6B7A8D]">Nöbet logu boş.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {shiftLogs.map((sl, idx) => (
+                <div
+                  key={sl.id}
+                  data-ocid={`security.shift.item.${idx + 1}`}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2]"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-[#0E1116]">
+                        {sl.date} — {sl.time}
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-1 text-sm text-[#3A4654]">
+                        <span>
+                          ⬆️ Gelen: <strong>{sl.incoming}</strong>
+                        </span>
+                        <span>
+                          ⬇️ Giden: <strong>{sl.outgoing}</strong>
+                        </span>
+                      </div>
+                      {sl.notes && (
+                        <p className="text-xs text-[#6B7A8D] mt-1 italic">
+                          {sl.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Kamera Haritası */}
+        <TabsContent value="cameras">
+          <div className="flex justify-between items-center mb-4">
+            <p className="font-semibold text-[#0E1116] flex items-center gap-2">
+              <Camera className="w-4 h-4" /> Kamera Bölge Haritası
+            </p>
+            <div className="flex gap-2 text-xs">
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{" "}
+                Aktif
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" />{" "}
+                Bakımda
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />{" "}
+                Arızalı
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {cameraZones.map((cz) => {
+              const statusColor =
+                cz.status === "Aktif"
+                  ? "border-green-200 bg-green-50"
+                  : cz.status === "Bakımda"
+                    ? "border-yellow-200 bg-yellow-50"
+                    : "border-red-200 bg-red-50";
+              const dotColor =
+                cz.status === "Aktif"
+                  ? "bg-green-500"
+                  : cz.status === "Bakımda"
+                    ? "bg-yellow-500"
+                    : "bg-red-500";
+              const badgeColor =
+                cz.status === "Aktif"
+                  ? "bg-green-100 text-green-700"
+                  : cz.status === "Bakımda"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700";
+              return (
+                <div
+                  key={cz.id}
+                  className={`rounded-2xl p-4 border ${statusColor}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <Camera className="w-4 h-4 text-[#4A90D9]" />
+                    <span className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+                  </div>
+                  <p className="font-semibold text-sm text-[#0E1116]">
+                    {cz.zone}
+                  </p>
+                  <p className="text-xs text-[#6B7A8D] mt-0.5">
+                    {cz.cameraCount} kamera
+                  </p>
+                  <Badge className={`mt-2 text-xs border-0 ${badgeColor}`}>
+                    {cz.status}
+                  </Badge>
+                  {isOwnerOrManager && (
+                    <button
+                      type="button"
+                      onClick={() => cycleCameraStatus(cz.id)}
+                      className="mt-2 text-xs text-[#4A90D9] hover:underline block"
+                    >
+                      Durum Değiştir
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 bg-white rounded-2xl p-4 border border-[#E5EAF2]">
+            <p className="text-sm font-medium text-[#3A4654] mb-2">Özet</p>
+            <div className="flex gap-4 text-sm">
+              <span className="text-green-700">
+                ✅ Aktif:{" "}
+                {cameraZones
+                  .filter((c) => c.status === "Aktif")
+                  .reduce((s, c) => s + c.cameraCount, 0)}{" "}
+                kamera
+              </span>
+              <span className="text-yellow-700">
+                ⚠️ Bakımda:{" "}
+                {cameraZones
+                  .filter((c) => c.status === "Bakımda")
+                  .reduce((s, c) => s + c.cameraCount, 0)}{" "}
+                kamera
+              </span>
+              <span className="text-red-700">
+                ❌ Arızalı:{" "}
+                {cameraZones
+                  .filter((c) => c.status === "Arızalı")
+                  .reduce((s, c) => s + c.cameraCount, 0)}{" "}
+                kamera
+              </span>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Tur Kaydı */}
+        <TabsContent value="patrols">
+          <div className="flex justify-between items-center mb-4">
+            <p className="font-semibold text-[#0E1116] flex items-center gap-2">
+              <MapPin className="w-4 h-4" /> Güvenlik Tur Kayıtları
+            </p>
+            {isOwnerOrManager && (
+              <Button
+                onClick={() => setShowPatrolDialog(true)}
+                size="sm"
+                className="bg-[#0B1B2E] text-white rounded-full gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" /> Tur Ekle
+              </Button>
+            )}
+          </div>
+          {patrolLogs.length === 0 ? (
+            <div className="bg-white rounded-2xl p-10 text-center border border-[#E5EAF2]">
+              <MapPin className="w-10 h-10 text-[#B0BAC6] mx-auto mb-3" />
+              <p className="text-[#6B7A8D]">Tur kaydı bulunamadı.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {patrolLogs.map((pl, idx) => (
+                <div
+                  key={pl.id}
+                  data-ocid={`security.patrol.item.${idx + 1}`}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5EAF2]"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-[#0E1116]">
+                          {pl.date} {pl.time}
+                        </p>
+                        <Badge className="bg-[#EEF3FA] text-[#4A90D9] border-0 text-xs">
+                          {pl.duration} dk
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-[#3A4654] mt-0.5">
+                        Personel: <strong>{pl.personnel}</strong>
+                      </p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {pl.zones.map((z) => (
+                          <Badge
+                            key={z}
+                            className="bg-[#F3F6FB] text-[#3A4654] border-0 text-xs"
+                          >
+                            {z}
+                          </Badge>
+                        ))}
+                      </div>
+                      {pl.notes && (
+                        <p className="text-xs text-[#6B7A8D] mt-1 italic">
+                          {pl.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
+
+      {/* Shift Dialog */}
+      <Dialog open={showShiftDialog} onOpenChange={setShowShiftDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nöbet Devri Ekle</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-sm font-medium text-[#3A4654] mb-1">Tarih</p>
+                <Input
+                  type="date"
+                  value={shiftForm.date}
+                  onChange={(e) =>
+                    setShiftForm((p) => ({ ...p, date: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#3A4654] mb-1">Saat</p>
+                <Input
+                  type="time"
+                  value={shiftForm.time}
+                  onChange={(e) =>
+                    setShiftForm((p) => ({ ...p, time: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Gelen Nöbetçi
+              </p>
+              <Input
+                placeholder="Ad Soyad"
+                value={shiftForm.incoming}
+                onChange={(e) =>
+                  setShiftForm((p) => ({ ...p, incoming: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Giden Nöbetçi
+              </p>
+              <Input
+                placeholder="Ad Soyad"
+                value={shiftForm.outgoing}
+                onChange={(e) =>
+                  setShiftForm((p) => ({ ...p, outgoing: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">Notlar</p>
+              <Textarea
+                placeholder="Devir notu..."
+                value={shiftForm.notes}
+                onChange={(e) =>
+                  setShiftForm((p) => ({ ...p, notes: e.target.value }))
+                }
+                rows={2}
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddShift}
+                className="flex-1 bg-[#0B1B2E] text-white rounded-full"
+              >
+                Ekle
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowShiftDialog(false)}
+                className="flex-1 rounded-full"
+              >
+                İptal
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Patrol Dialog */}
+      <Dialog open={showPatrolDialog} onOpenChange={setShowPatrolDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Güvenlik Turu Ekle</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-sm font-medium text-[#3A4654] mb-1">Tarih</p>
+                <Input
+                  type="date"
+                  value={patrolForm.date}
+                  onChange={(e) =>
+                    setPatrolForm((p) => ({ ...p, date: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#3A4654] mb-1">Saat</p>
+                <Input
+                  type="time"
+                  value={patrolForm.time}
+                  onChange={(e) =>
+                    setPatrolForm((p) => ({ ...p, time: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Personel Adı
+              </p>
+              <Input
+                placeholder="Ad Soyad"
+                value={patrolForm.personnel}
+                onChange={(e) =>
+                  setPatrolForm((p) => ({ ...p, personnel: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Ziyaret Edilen Bölgeler
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {PATROL_ZONES.map((zone) => (
+                  <label
+                    key={zone}
+                    className="flex items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={patrolForm.zones.includes(zone)}
+                      onChange={() => togglePatrolZone(zone)}
+                    />
+                    {zone}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Süre (dakika)
+              </p>
+              <Input
+                type="number"
+                value={patrolForm.duration}
+                onChange={(e) =>
+                  setPatrolForm((p) => ({
+                    ...p,
+                    duration: Number(e.target.value),
+                  }))
+                }
+                min={1}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">Notlar</p>
+              <Textarea
+                placeholder="Tur notu..."
+                value={patrolForm.notes}
+                onChange={(e) =>
+                  setPatrolForm((p) => ({ ...p, notes: e.target.value }))
+                }
+                rows={2}
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddPatrol}
+                className="flex-1 bg-[#0B1B2E] text-white rounded-full"
+              >
+                Ekle
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowPatrolDialog(false)}
+                className="flex-1 rounded-full"
+              >
+                İptal
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Report Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

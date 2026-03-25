@@ -32,6 +32,17 @@ import { useTranslation } from "../hooks/useTranslation";
 interface AgendaItem {
   id: string;
   text: string;
+  duration?: number;
+}
+
+interface FormalDecision {
+  id: string;
+  no: number;
+  text: string;
+  votesFor: number;
+  votesAgainst: number;
+  votesAbstain: number;
+  status: "Kabul Edildi" | "Reddedildi" | "Ertelendi";
 }
 
 interface AttendeeRecord {
@@ -101,6 +112,21 @@ export default function MeetingManagement({ userId, isOwnerOrManager }: Props) {
   const [agendaItems, setAgendaItems] = useState<string[]>([""]);
   const [editNotes, setEditNotes] = useState("");
   const [editDecisions, setEditDecisions] = useState("");
+  const [detailTab, setDetailTab] = useState("notes");
+  const [decisions, setDecisions] = useState<Record<string, FormalDecision[]>>(
+    {},
+  );
+  const [showDecisionForm, setShowDecisionForm] = useState(false);
+  const [decisionForm, setDecisionForm] = useState({
+    text: "",
+    votesFor: 0,
+    votesAgainst: 0,
+    votesAbstain: 0,
+    status: "Kabul Edildi" as FormalDecision["status"],
+  });
+  const [agendaChecked, setAgendaChecked] = useState<Record<string, boolean>>(
+    {},
+  );
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -192,6 +218,94 @@ export default function MeetingManagement({ userId, isOwnerOrManager }: Props) {
     setDetailMeeting(meeting);
     setEditNotes(meeting.meetingNotes);
     setEditDecisions(meeting.decisions);
+    setDetailTab("notes");
+    setShowDecisionForm(false);
+    // Load decisions from localStorage
+    try {
+      const raw = localStorage.getItem(`sitecore_decisions_${meeting.id}`);
+      if (raw) {
+        setDecisions((prev) => ({ ...prev, [meeting.id]: JSON.parse(raw) }));
+      } else {
+        // Seed with realistic decisions
+        const seed: FormalDecision[] = [
+          {
+            id: crypto.randomUUID(),
+            no: 1,
+            text: "2026 yılı aidat miktarı %15 artırılmasına karar verildi.",
+            votesFor: 8,
+            votesAgainst: 2,
+            votesAbstain: 1,
+            status: "Kabul Edildi",
+          },
+          {
+            id: crypto.randomUUID(),
+            no: 2,
+            text: "Bahçe renovasyonu teklifinin önümüzdeki toplantıya ertelenmesi kararlaştırıldı.",
+            votesFor: 6,
+            votesAgainst: 3,
+            votesAbstain: 2,
+            status: "Ertelendi",
+          },
+        ];
+        localStorage.setItem(
+          `sitecore_decisions_${meeting.id}`,
+          JSON.stringify(seed),
+        );
+        setDecisions((prev) => ({ ...prev, [meeting.id]: seed }));
+      }
+    } catch {
+      /* ignore */
+    }
+    // Load agenda checked state
+    try {
+      const acRaw = localStorage.getItem(
+        `sitecore_agenda_checked_${meeting.id}`,
+      );
+      if (acRaw) setAgendaChecked(JSON.parse(acRaw));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const saveDecisions = (meetingId: string, updated: FormalDecision[]) => {
+    setDecisions((prev) => ({ ...prev, [meetingId]: updated }));
+    localStorage.setItem(
+      `sitecore_decisions_${meetingId}`,
+      JSON.stringify(updated),
+    );
+  };
+
+  const handleAddDecision = (meetingId: string) => {
+    if (!decisionForm.text.trim()) return;
+    const existing = decisions[meetingId] || [];
+    const nd: FormalDecision = {
+      id: crypto.randomUUID(),
+      no: existing.length + 1,
+      ...decisionForm,
+    };
+    saveDecisions(meetingId, [...existing, nd]);
+    setDecisionForm({
+      text: "",
+      votesFor: 0,
+      votesAgainst: 0,
+      votesAbstain: 0,
+      status: "Kabul Edildi",
+    });
+    setShowDecisionForm(false);
+  };
+
+  const toggleAgendaCheck = (meetingId: string, itemId: string) => {
+    const key = `${meetingId}_${itemId}`;
+    const updated = { ...agendaChecked, [key]: !agendaChecked[key] };
+    setAgendaChecked(updated);
+    try {
+      localStorage.setItem(
+        `sitecore_agenda_checked_${meetingId}`,
+        JSON.stringify(updated),
+      );
+    } catch {
+      /* ignore */
+    }
   };
 
   const statusColor = (status: Meeting["status"]) => {
@@ -561,92 +675,321 @@ export default function MeetingManagement({ userId, isOwnerOrManager }: Props) {
             </DialogTitle>
           </DialogHeader>
           {detailMeeting && (
-            <div className="space-y-4 mt-2">
-              {detailMeeting.agendaItems.length > 0 && (
-                <div className="bg-[#F3F6FB] rounded-lg p-3">
-                  <p className="text-xs font-semibold text-[#3A4654] mb-2">
-                    Gündem Maddeleri
-                  </p>
-                  <ul className="list-disc list-inside space-y-1">
-                    {detailMeeting.agendaItems.map((item) => (
-                      <li key={item.id} className="text-sm text-[#3A4654]">
-                        {item.text}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {detailMeeting.attendeeList.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-[#3A4654] mb-2">
-                    Katılımcı Yoklaması
-                  </p>
-                  <div className="space-y-1">
-                    {detailMeeting.attendeeList.map((a) => (
-                      <label
-                        key={a.name}
-                        className="flex items-center gap-2 text-sm cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={a.attended}
-                          onChange={() =>
-                            toggleAttendee(detailMeeting.id, a.name)
-                          }
-                        />
-                        <span
-                          className={
-                            a.attended
-                              ? "text-green-700 font-medium"
-                              : "text-[#3A4654]"
-                          }
-                        >
-                          {a.name}
-                        </span>
-                        {a.attended && (
-                          <Check className="w-3.5 h-3.5 text-green-500" />
-                        )}
-                      </label>
-                    ))}
+            <div className="mt-2">
+              {/* Tab selector */}
+              <div className="flex gap-1 mb-4 bg-[#F3F6FB] rounded-lg p-1">
+                {["notes", "agenda", "decisions"].map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setDetailTab(tab)}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${detailTab === tab ? "bg-white shadow text-[#0B1B2E]" : "text-[#6B7A8D] hover:text-[#0B1B2E]"}`}
+                  >
+                    {tab === "notes"
+                      ? "Notlar & Yoklama"
+                      : tab === "agenda"
+                        ? "Gündem"
+                        : "Kararlar"}
+                  </button>
+                ))}
+              </div>
+
+              {detailTab === "notes" && (
+                <div className="space-y-4">
+                  {detailMeeting.attendeeList.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-[#3A4654] mb-2">
+                        Katılımcı Yoklaması
+                      </p>
+                      <div className="space-y-1">
+                        {detailMeeting.attendeeList.map((a) => (
+                          <label
+                            key={a.name}
+                            className="flex items-center gap-2 text-sm cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={a.attended}
+                              onChange={() =>
+                                toggleAttendee(detailMeeting.id, a.name)
+                              }
+                            />
+                            <span
+                              className={
+                                a.attended
+                                  ? "text-green-700 font-medium"
+                                  : "text-[#3A4654]"
+                              }
+                            >
+                              {a.name}
+                            </span>
+                            {a.attended && (
+                              <Check className="w-3.5 h-3.5 text-green-500" />
+                            )}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-[#3A4654] mb-1">
+                      Toplantı Notları
+                    </p>
+                    <Textarea
+                      value={editNotes}
+                      onChange={(e) => setEditNotes(e.target.value)}
+                      rows={3}
+                      placeholder="Toplantı sırasında alınan notlar..."
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#3A4654] mb-1">
+                      Genel Kararlar (Serbest Metin)
+                    </p>
+                    <Textarea
+                      value={editDecisions}
+                      onChange={(e) => setEditDecisions(e.target.value)}
+                      rows={2}
+                      placeholder="Kısa karar özeti..."
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDetailMeeting(null)}
+                    >
+                      {t.cancel || "İptal"}
+                    </Button>
+                    <Button
+                      className="bg-[#1A3A5C] hover:bg-[#0B1B2E] text-white"
+                      onClick={handleSaveNotes}
+                    >
+                      Kaydet
+                    </Button>
                   </div>
                 </div>
               )}
-              <div>
-                <p className="text-sm font-medium text-[#3A4654] mb-1">
-                  Toplantı Notları
-                </p>
-                <Textarea
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  rows={3}
-                  placeholder="Toplantı sırasında alınan notlar..."
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[#3A4654] mb-1">
-                  Alınan Kararlar
-                </p>
-                <Textarea
-                  value={editDecisions}
-                  onChange={(e) => setEditDecisions(e.target.value)}
-                  rows={3}
-                  placeholder="Alınan kararları yazın..."
-                />
-              </div>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setDetailMeeting(null)}
-                >
-                  {t.cancel || "İptal"}
-                </Button>
-                <Button
-                  className="bg-[#1A3A5C] hover:bg-[#0B1B2E] text-white"
-                  onClick={handleSaveNotes}
-                >
-                  Kaydet
-                </Button>
-              </div>
+
+              {detailTab === "agenda" && (
+                <div className="space-y-2">
+                  <p className="text-xs text-[#6B7A8D] mb-3">
+                    Görüşülen maddeleri işaretleyin.
+                  </p>
+                  {detailMeeting.agendaItems.length === 0 ? (
+                    <p className="text-sm text-[#6B7A8D] text-center py-6">
+                      Gündem maddesi eklenmemiş.
+                    </p>
+                  ) : (
+                    detailMeeting.agendaItems.map((item, idx) => {
+                      const key = `${detailMeeting.id}_${item.id}`;
+                      const checked = !!agendaChecked[key];
+                      return (
+                        <label
+                          key={item.id}
+                          className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${checked ? "bg-green-50 border-green-200" : "bg-white border-[#E5EAF2]"}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              toggleAgendaCheck(detailMeeting.id, item.id)
+                            }
+                            className="mt-0.5"
+                          />
+                          <div className="flex-1">
+                            <span className="text-xs font-bold text-[#4A90D9] mr-2">
+                              {idx + 1}.
+                            </span>
+                            <span
+                              className={`text-sm ${checked ? "line-through text-[#6B7A8D]" : "text-[#0E1116]"}`}
+                            >
+                              {item.text}
+                            </span>
+                          </div>
+                          {checked && (
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                          )}
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {detailTab === "decisions" && (
+                <div className="space-y-3">
+                  {isOwnerOrManager && (
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        onClick={() => setShowDecisionForm((v) => !v)}
+                        className="bg-[#0B1B2E] text-white rounded-full gap-1 text-xs"
+                      >
+                        <Plus className="w-3 h-3" /> Karar Ekle
+                      </Button>
+                    </div>
+                  )}
+                  {showDecisionForm && (
+                    <div className="bg-[#F3F6FB] rounded-xl p-4 space-y-3 border border-[#E5EAF2]">
+                      <div>
+                        <p className="text-xs font-medium text-[#3A4654] mb-1">
+                          Karar Metni
+                        </p>
+                        <Textarea
+                          placeholder="Karar içeriğini yazın..."
+                          value={decisionForm.text}
+                          onChange={(e) =>
+                            setDecisionForm((p) => ({
+                              ...p,
+                              text: e.target.value,
+                            }))
+                          }
+                          rows={2}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-[#3A4654] mb-1">
+                            Lehte
+                          </p>
+                          <input
+                            type="number"
+                            min={0}
+                            value={decisionForm.votesFor}
+                            onChange={(e) =>
+                              setDecisionForm((p) => ({
+                                ...p,
+                                votesFor: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full border border-[#E5EAF2] rounded-lg px-2 py-1.5 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-[#3A4654] mb-1">
+                            Aleyhte
+                          </p>
+                          <input
+                            type="number"
+                            min={0}
+                            value={decisionForm.votesAgainst}
+                            onChange={(e) =>
+                              setDecisionForm((p) => ({
+                                ...p,
+                                votesAgainst: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full border border-[#E5EAF2] rounded-lg px-2 py-1.5 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-[#3A4654] mb-1">
+                            Çekimser
+                          </p>
+                          <input
+                            type="number"
+                            min={0}
+                            value={decisionForm.votesAbstain}
+                            onChange={(e) =>
+                              setDecisionForm((p) => ({
+                                ...p,
+                                votesAbstain: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full border border-[#E5EAF2] rounded-lg px-2 py-1.5 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-[#3A4654] mb-1">
+                          Durum
+                        </p>
+                        <select
+                          value={decisionForm.status}
+                          onChange={(e) =>
+                            setDecisionForm((p) => ({
+                              ...p,
+                              status: e.target
+                                .value as FormalDecision["status"],
+                            }))
+                          }
+                          className="w-full border border-[#E5EAF2] rounded-lg px-2 py-1.5 text-sm"
+                        >
+                          <option>Kabul Edildi</option>
+                          <option>Reddedildi</option>
+                          <option>Ertelendi</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddDecision(detailMeeting.id)}
+                          className="bg-[#0B1B2E] text-white rounded-full text-xs"
+                        >
+                          Kaydet
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowDecisionForm(false)}
+                          className="rounded-full text-xs"
+                        >
+                          İptal
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {(decisions[detailMeeting.id] || []).length === 0 ? (
+                    <p className="text-sm text-[#6B7A8D] text-center py-6">
+                      Henüz resmi karar eklenmedi.
+                    </p>
+                  ) : (
+                    (decisions[detailMeeting.id] || []).map((dec) => {
+                      const statusColor =
+                        dec.status === "Kabul Edildi"
+                          ? "bg-green-100 text-green-700"
+                          : dec.status === "Reddedildi"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700";
+                      return (
+                        <div
+                          key={dec.id}
+                          className="bg-white rounded-xl p-4 border border-[#E5EAF2]"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-[#4A90D9]">
+                                  Karar #{dec.no}
+                                </span>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor}`}
+                                >
+                                  {dec.status}
+                                </span>
+                              </div>
+                              <p className="text-sm text-[#0E1116]">
+                                {dec.text}
+                              </p>
+                              <div className="flex gap-3 mt-2 text-xs text-[#6B7A8D]">
+                                <span className="text-green-600">
+                                  ✅ Lehte: {dec.votesFor}
+                                </span>
+                                <span className="text-red-600">
+                                  ❌ Aleyhte: {dec.votesAgainst}
+                                </span>
+                                <span className="text-gray-500">
+                                  ➖ Çekimser: {dec.votesAbstain}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

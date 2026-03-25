@@ -1,9 +1,30 @@
-import { Download, FileText, Search, Trash2, Upload } from "lucide-react";
+import {
+  Download,
+  ExternalLink,
+  FileText,
+  Grid,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+
+interface DocVersion {
+  version: string;
+  uploadDate: string;
+  size: string;
+  base64: string;
+}
 
 interface Doc {
   id: string;
@@ -14,6 +35,8 @@ interface Doc {
   size: string;
   base64: string;
   mimeType: string;
+  expiresAt?: string;
+  versions?: DocVersion[];
 }
 
 interface DocumentManagementProps {
@@ -53,6 +76,39 @@ const DOC_TYPE_TO_CATEGORY: Record<string, string> = {
   other: "other",
 };
 
+// Check if doc expires within 30 days
+function isExpiringSoon(expiresAt?: string): boolean {
+  if (!expiresAt) return false;
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  return diff > 0 && diff < 30 * 24 * 60 * 60 * 1000;
+}
+
+function isExpired(expiresAt?: string): boolean {
+  if (!expiresAt) return false;
+  return new Date(expiresAt).getTime() < Date.now();
+}
+
+// Generate a QR-like pattern (decorative grid)
+function QRPattern() {
+  const size = 10;
+  const cells = Array.from({ length: size * size }, () => Math.random() > 0.5);
+  return (
+    <div
+      className="grid"
+      style={{
+        gridTemplateColumns: `repeat(${size}, 1fr)`,
+        width: 120,
+        height: 120,
+      }}
+    >
+      {cells.map((filled, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static QR pattern
+        <div key={i} className={`${filled ? "bg-[#0B1B2E]" : "bg-white"}`} />
+      ))}
+    </div>
+  );
+}
+
 export default function DocumentManagement({
   buildingId,
   isOwner,
@@ -76,9 +132,12 @@ export default function DocumentManagement({
   const [pendingName, setPendingName] = useState("");
   const [pendingType, setPendingType] = useState("other");
   const [pendingCategory, setPendingCategory] = useState("other");
+  const [pendingExpiry, setPendingExpiry] = useState("");
   const [error, setError] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [qrDoc, setQrDoc] = useState<Doc | null>(null);
+  const [versionDoc, setVersionDoc] = useState<Doc | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const saveDocs = (updated: Doc[]) => {
@@ -102,6 +161,7 @@ export default function DocumentManagement({
       setPendingName(file.name);
       setPendingType("other");
       setPendingCategory("other");
+      setPendingExpiry("");
     };
     reader.readAsDataURL(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -109,21 +169,67 @@ export default function DocumentManagement({
 
   const handleUploadConfirm = () => {
     if (!pendingFile) return;
-    const doc: Doc = {
-      id: Date.now().toString(),
-      name: pendingName || pendingFile.file.name,
-      type: pendingType,
-      category: pendingCategory || DOC_TYPE_TO_CATEGORY[pendingType] || "other",
-      uploadDate: new Date().toLocaleDateString(),
-      size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
-      base64: pendingFile.base64,
-      mimeType: pendingFile.file.type,
-    };
-    saveDocs([doc, ...docs]);
+    // check if a version of this doc already exists
+    const existingIdx = docs.findIndex((d) => d.name === pendingName);
+    if (existingIdx >= 0) {
+      const existing = docs[existingIdx];
+      const versions = existing.versions || [
+        {
+          version: "v1.0",
+          uploadDate: existing.uploadDate,
+          size: existing.size,
+          base64: existing.base64,
+        },
+      ];
+      const major = versions.length + 1;
+      const newVersion = `v${major}.0`;
+      const updatedDoc: Doc = {
+        ...existing,
+        base64: pendingFile.base64,
+        size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
+        uploadDate: new Date().toLocaleDateString(),
+        expiresAt: pendingExpiry || existing.expiresAt,
+        versions: [
+          ...versions,
+          {
+            version: newVersion,
+            uploadDate: new Date().toLocaleDateString(),
+            size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
+            base64: pendingFile.base64,
+          },
+        ],
+      };
+      const updated = [...docs];
+      updated[existingIdx] = updatedDoc;
+      saveDocs(updated);
+    } else {
+      const doc: Doc = {
+        id: Date.now().toString(),
+        name: pendingName || pendingFile.file.name,
+        type: pendingType,
+        category:
+          pendingCategory || DOC_TYPE_TO_CATEGORY[pendingType] || "other",
+        uploadDate: new Date().toLocaleDateString(),
+        size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
+        base64: pendingFile.base64,
+        mimeType: pendingFile.file.type,
+        expiresAt: pendingExpiry || undefined,
+        versions: [
+          {
+            version: "v1.0",
+            uploadDate: new Date().toLocaleDateString(),
+            size: `${(pendingFile.file.size / 1024).toFixed(1)} KB`,
+            base64: pendingFile.base64,
+          },
+        ],
+      };
+      saveDocs([doc, ...docs]);
+    }
     setPendingFile(null);
     setPendingName("");
     setPendingType("other");
     setPendingCategory("other");
+    setPendingExpiry("");
   };
 
   const handleDownload = (doc: Doc) => {
@@ -139,9 +245,8 @@ export default function DocumentManagement({
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string) =>
     saveDocs(docs.filter((d) => d.id !== id));
-  };
 
   const filteredDocs = docs.filter((doc) => {
     const matchesCategory =
@@ -270,6 +375,17 @@ export default function DocumentManagement({
                 </select>
               </div>
             </div>
+            <div>
+              <Label className="text-sm font-medium text-[#3A4654] mb-1 block">
+                Son Kullanma Tarihi (isteğe bağlı)
+              </Label>
+              <input
+                type="date"
+                value={pendingExpiry}
+                onChange={(e) => setPendingExpiry(e.target.value)}
+                className="w-full border border-[#D7DEE9] rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
             <div className="flex gap-3 pt-1">
               <Button
                 data-ocid="documents.confirm_button"
@@ -314,77 +430,203 @@ export default function DocumentManagement({
                   {t.documentType}
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#3A4654] uppercase tracking-wide hidden sm:table-cell">
-                  {t.uploadDate}
+                  Versiyon
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#3A4654] uppercase tracking-wide hidden sm:table-cell">
-                  {t.fileSize}
+                  {t.uploadDate}
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#3A4654] uppercase tracking-wide hidden md:table-cell">
+                  Son Kullanma
                 </th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
-              {filteredDocs.map((doc, idx) => (
-                <tr
-                  key={doc.id}
-                  data-ocid={`documents.item.${idx + 1}`}
-                  className="border-t border-[#F3F6FB] hover:bg-[#FAFBFD] transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-[#4A90D9] flex-shrink-0" />
-                      <span className="text-sm font-medium text-[#0E1116] truncate max-w-[160px]">
-                        {doc.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      className={`text-xs border ${TYPE_COLORS[doc.type] || TYPE_COLORS.other}`}
-                    >
-                      {
-                        t[
-                          DOC_TYPES.find((d) => d.value === doc.type)
-                            ?.labelKey || "docTypeOther"
-                        ]
-                      }
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[#3A4654] hidden sm:table-cell">
-                    {doc.uploadDate}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[#3A4654] hidden sm:table-cell">
-                    {doc.size}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2 justify-end">
+              {filteredDocs.map((doc, idx) => {
+                const expSoon = isExpiringSoon(doc.expiresAt);
+                const expired = isExpired(doc.expiresAt);
+                const currentVersion = doc.versions?.at(-1)?.version || "v1.0";
+                return (
+                  <tr
+                    key={doc.id}
+                    data-ocid={`documents.item.${idx + 1}`}
+                    className="border-t border-[#F3F6FB] hover:bg-[#FAFBFD] transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-[#4A90D9] flex-shrink-0" />
+                        <span className="text-sm font-medium text-[#0E1116] truncate max-w-[160px]">
+                          {doc.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge
+                        className={`text-xs border ${TYPE_COLORS[doc.type] || TYPE_COLORS.other}`}
+                      >
+                        {
+                          t[
+                            DOC_TYPES.find((d) => d.value === doc.type)
+                              ?.labelKey || "docTypeOther"
+                          ]
+                        }
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#3A4654] hidden sm:table-cell">
                       <button
                         type="button"
-                        data-ocid={`documents.item.${idx + 1}`}
-                        onClick={() => handleDownload(doc)}
-                        className="text-[#4A90D9] hover:text-[#2A70B9] text-xs flex items-center gap-1"
-                        title={t.downloadDoc}
+                        onClick={() => setVersionDoc(doc)}
+                        className="text-xs px-2 py-0.5 rounded bg-[#EEF3FA] text-[#4A90D9] font-medium hover:bg-blue-100"
                       >
-                        <Download className="w-4 h-4" />
+                        {currentVersion} ({doc.versions?.length || 1} versiyon)
                       </button>
-                      {isOwner && (
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#3A4654] hidden sm:table-cell">
+                      {doc.uploadDate}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      {doc.expiresAt ? (
+                        <span
+                          className={`text-xs font-medium ${
+                            expired
+                              ? "text-red-600"
+                              : expSoon
+                                ? "text-yellow-600"
+                                : "text-[#6B7A8D]"
+                          }`}
+                        >
+                          {expired ? "❌" : expSoon ? "⚠️" : ""} {doc.expiresAt}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[#6B7A8D]">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 justify-end">
                         <button
                           type="button"
-                          data-ocid={`documents.delete_button.${idx + 1}`}
-                          onClick={() => handleDelete(doc.id)}
-                          className="text-red-400 hover:text-red-600 text-xs flex items-center gap-1"
-                          title={t.deleteDoc}
+                          data-ocid={`documents.item.${idx + 1}`}
+                          onClick={() => handleDownload(doc)}
+                          className="text-[#4A90D9] hover:text-[#2A70B9] text-xs flex items-center gap-1"
+                          title={t.downloadDoc}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Download className="w-4 h-4" />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        <button
+                          type="button"
+                          onClick={() => setQrDoc(doc)}
+                          className="text-[#6B7A8D] hover:text-[#0B1B2E] text-xs flex items-center gap-1"
+                          title="QR Kod"
+                        >
+                          <Grid className="w-4 h-4" />
+                        </button>
+                        {isOwner && (
+                          <button
+                            type="button"
+                            data-ocid={`documents.delete_button.${idx + 1}`}
+                            onClick={() => handleDelete(doc.id)}
+                            className="text-red-400 hover:text-red-600 text-xs flex items-center gap-1"
+                            title={t.deleteDoc}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
+
+      {/* QR Modal */}
+      <Dialog open={!!qrDoc} onOpenChange={() => setQrDoc(null)}>
+        <DialogContent className="max-w-xs" data-ocid="documents.dialog">
+          <DialogHeader>
+            <DialogTitle>Belge QR Kodu</DialogTitle>
+          </DialogHeader>
+          {qrDoc && (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-sm text-[#3A4654] text-center">{qrDoc.name}</p>
+              <div className="p-3 bg-white border-2 border-[#0B1B2E] rounded-xl">
+                <QRPattern />
+              </div>
+              <p className="text-xs text-[#6B7A8D] text-center">
+                Belge referans kodu: DOC-{qrDoc.id.slice(-6).toUpperCase()}
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setQrDoc(null)}
+                data-ocid="documents.close_button"
+              >
+                Kapat
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Version History Modal */}
+      <Dialog open={!!versionDoc} onOpenChange={() => setVersionDoc(null)}>
+        <DialogContent className="max-w-md" data-ocid="documents.dialog">
+          <DialogHeader>
+            <DialogTitle>Versiyon Geçmişi</DialogTitle>
+          </DialogHeader>
+          {versionDoc && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-[#0E1116]">
+                {versionDoc.name}
+              </p>
+              <div className="space-y-2">
+                {(
+                  versionDoc.versions || [
+                    {
+                      version: "v1.0",
+                      uploadDate: versionDoc.uploadDate,
+                      size: versionDoc.size,
+                      base64: versionDoc.base64,
+                    },
+                  ]
+                ).map((v, i, arr) => (
+                  <div
+                    key={v.version}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      i === arr.length - 1
+                        ? "bg-blue-50 border border-blue-200"
+                        : "bg-[#F3F6FB]"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-[#0E1116]">
+                        {v.version}
+                      </p>
+                      <p className="text-xs text-[#6B7A8D]">
+                        {v.uploadDate} · {v.size}
+                      </p>
+                    </div>
+                    {i === arr.length - 1 && (
+                      <Badge className="bg-blue-100 text-blue-700 border-0 text-xs">
+                        Güncel
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setVersionDoc(null)}
+                data-ocid="documents.close_button"
+              >
+                Kapat
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

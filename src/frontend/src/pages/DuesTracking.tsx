@@ -1,4 +1,4 @@
-import { DollarSign, Upload } from "lucide-react";
+import { Bell, DollarSign, Settings, Upload } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -35,8 +35,16 @@ interface Props {
   t: any;
 }
 
+interface ReminderLog {
+  id: string;
+  daire: string;
+  date: string;
+  month: string;
+}
+
 const APT_KEY = (id: string) => `sitecore_apartments_${id}`;
 const DUES_KEY = (id: string) => `sitecore_dues_${id}`;
+const REMINDER_KEY = (id: string) => `sitecore_reminders_${id}`;
 
 function currentMonth() {
   const d = new Date();
@@ -69,6 +77,16 @@ function monthDiffFromNow(month: string): number {
   return (now.getFullYear() - yr) * 12 + (now.getMonth() + 1 - mo);
 }
 
+function calcInterest(
+  amount: number,
+  month: string,
+  dailyRate: number,
+): number {
+  const days = monthDiffFromNow(month) * 30;
+  if (days <= 0) return 0;
+  return Math.round(amount * dailyRate * days);
+}
+
 export default function DuesTracking({ buildingId, isOwner, t }: Props) {
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [dues, setDues] = useState<DueRecord[]>([]);
@@ -76,17 +94,28 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkAmount, setBulkAmount] = useState("");
   const [proofFiles, setProofFiles] = useState<Record<string, string>>({});
+  const [reminders, setReminders] = useState<ReminderLog[]>([]);
+  const [dailyRate, setDailyRate] = useState(0.001); // 0.1% per day
+  const [showRateDialog, setShowRateDialog] = useState(false);
+  const [rateInput, setRateInput] = useState("0.1");
 
   useEffect(() => {
     const raw = localStorage.getItem(APT_KEY(buildingId));
     if (raw) setApartments(JSON.parse(raw));
     const dRaw = localStorage.getItem(DUES_KEY(buildingId));
     if (dRaw) setDues(JSON.parse(dRaw));
+    const rRaw = localStorage.getItem(REMINDER_KEY(buildingId));
+    if (rRaw) setReminders(JSON.parse(rRaw));
   }, [buildingId]);
 
   const saveDues = (updated: DueRecord[]) => {
     setDues(updated);
     localStorage.setItem(DUES_KEY(buildingId), JSON.stringify(updated));
+  };
+
+  const saveReminders = (updated: ReminderLog[]) => {
+    setReminders(updated);
+    localStorage.setItem(REMINDER_KEY(buildingId), JSON.stringify(updated));
   };
 
   const monthDues = useMemo(
@@ -170,9 +199,27 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
     );
   };
 
+  const handleSendReminder = (apt: Apartment) => {
+    const newReminder: ReminderLog = {
+      id: crypto.randomUUID(),
+      daire: `${apt.block ? `${apt.block}-` : ""}${apt.number}`,
+      date: new Date().toLocaleString("tr-TR"),
+      month: formatMonth(month),
+    };
+    saveReminders([newReminder, ...reminders]);
+    toast.success(`Daire ${apt.number} için hatırlatma gönderildi.`);
+  };
+
   const handleProofUpload = (aptId: string, fileName: string) => {
     setProofFiles((prev) => ({ ...prev, [aptId]: fileName }));
     toast.success(`Ödeme kanıtı kaydedildi: ${fileName}`);
+  };
+
+  const handleSaveRate = () => {
+    const r = Number(rateInput) / 100;
+    if (r > 0) setDailyRate(r);
+    setShowRateDialog(false);
+    toast.success(`Günlük faiz oranı güncellendi: %${rateInput}`);
   };
 
   const totalCollected = monthDues
@@ -267,6 +314,14 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                 Toplu Hatırlatma Gönder
               </Button>
               <Button
+                data-ocid="dues.toggle"
+                onClick={() => setShowRateDialog(true)}
+                variant="outline"
+                className="text-sm rounded-full border-gray-300 text-gray-600"
+              >
+                <Settings className="w-3.5 h-3.5 mr-1" /> Faiz Ayarı
+              </Button>
+              <Button
                 data-ocid="dues.primary_button"
                 onClick={() => setShowBulkDialog(true)}
                 className="bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full text-sm"
@@ -306,6 +361,7 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
         <TabsList className="bg-[#F3F6FB] mb-4">
           <TabsTrigger value="table">Aidat Tablosu</TabsTrigger>
           <TabsTrigger value="aging">Borç Yaşlandırma</TabsTrigger>
+          <TabsTrigger value="reminders">Hatırlatma Geçmişi</TabsTrigger>
           <TabsTrigger value="chart">Grafik</TabsTrigger>
         </TabsList>
 
@@ -332,6 +388,9 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                       {t.dueAmount}
                     </th>
                     <th className="text-left px-4 py-3 text-sm font-semibold text-[#3A4654]">
+                      Gecikme Faizi
+                    </th>
+                    <th className="text-left px-4 py-3 text-sm font-semibold text-[#3A4654]">
                       {t.status}
                     </th>
                     <th className="text-left px-4 py-3 text-sm font-semibold text-[#3A4654]">
@@ -344,6 +403,14 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                   {apartments.map((apt, idx) => {
                     const due = getDue(apt.id);
                     const proofFile = proofFiles[apt.id];
+                    const isOverdue =
+                      due?.status === "overdue" ||
+                      (due?.status === "pending" &&
+                        monthDiffFromNow(month) > 0);
+                    const interest =
+                      isOverdue && due
+                        ? calcInterest(due.amount, due.month, dailyRate)
+                        : 0;
                     return (
                       <tr
                         key={apt.id}
@@ -379,6 +446,15 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                           )}
                         </td>
                         <td className="px-4 py-3">
+                          {interest > 0 ? (
+                            <span className="text-red-500 text-sm font-medium">
+                              +{interest.toLocaleString()} ₺
+                            </span>
+                          ) : (
+                            <span className="text-[#9CA8B4] text-sm">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
                           {statusBadge(due?.status)}
                         </td>
                         <td className="px-4 py-3">
@@ -407,6 +483,15 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                         {isOwner && (
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1 justify-end">
+                              <Button
+                                data-ocid={`dues.secondary_button.${idx + 1}`}
+                                onClick={() => handleSendReminder(apt)}
+                                size="sm"
+                                variant="outline"
+                                className="text-xs text-blue-600 border-blue-200 hover:bg-blue-50 rounded-full h-7 gap-1"
+                              >
+                                <Bell className="w-3 h-3" /> Hatırlat
+                              </Button>
                               <Button
                                 data-ocid={`dues.toggle.${idx + 1}`}
                                 onClick={() => setStatus(apt.id, "paid")}
@@ -494,6 +579,11 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                       const apt = apartments.find(
                         (a) => a.id === d.apartmentId,
                       );
+                      const interest = calcInterest(
+                        d.amount,
+                        d.month,
+                        dailyRate,
+                      );
                       return (
                         <tr key={d.id} className="border-t border-[#F0F3F8]">
                           <td className="px-4 py-2 font-medium text-[#0E1116]">
@@ -505,6 +595,9 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
                           </td>
                           <td className="px-4 py-2 font-semibold text-red-600">
                             {d.amount.toLocaleString()} ₺
+                          </td>
+                          <td className="px-4 py-2 text-red-400 text-xs">
+                            Faiz: +{interest.toLocaleString()} ₺
                           </td>
                           <td className="px-4 py-2 text-[#6B7A8D]">
                             {formatMonth(d.month)}
@@ -522,6 +615,69 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
               <p className="text-[#6B7A8D]">Vadesi geçmiş borç bulunmuyor.</p>
             </div>
           )}
+          <div className="bg-[#EEF3FA] border border-[#C5D5EA] rounded-xl p-3 mt-3 text-xs text-[#4A90D9]">
+            Günlük gecikme faiz oranı: %{(dailyRate * 100).toFixed(1)} • Aylık:
+            %{(dailyRate * 30 * 100).toFixed(1)}
+            {isOwner && (
+              <button
+                type="button"
+                className="ml-2 underline"
+                onClick={() => setShowRateDialog(true)}
+              >
+                Değiştir
+              </button>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reminders">
+          <div className="bg-white rounded-2xl border border-[#E5EAF2] overflow-hidden">
+            <div className="bg-[#F3F6FB] px-4 py-3 border-b border-[#E5EAF2]">
+              <h3 className="font-semibold text-sm text-[#0E1116] flex items-center gap-2">
+                <Bell className="w-4 h-4 text-[#4A90D9]" /> Gönderilen
+                Hatırlatmalar
+              </h3>
+            </div>
+            {reminders.length === 0 ? (
+              <div
+                data-ocid="dues.empty_state"
+                className="py-12 text-center text-[#6B7A8D]"
+              >
+                Henüz hatırlatma gönderilmedi.
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-[#F3F6FB] border-b border-[#E5EAF2]">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-[#3A4654]">
+                      Daire
+                    </th>
+                    <th className="text-left px-4 py-2 text-[#3A4654]">
+                      İlgili Dönem
+                    </th>
+                    <th className="text-left px-4 py-2 text-[#3A4654]">
+                      Gönderilme Tarihi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reminders.map((r, i) => (
+                    <tr
+                      key={r.id}
+                      data-ocid={`dues.item.${i + 1}`}
+                      className="border-t border-[#F0F3F8] hover:bg-[#F9FAFB]"
+                    >
+                      <td className="px-4 py-2 font-medium text-[#0E1116]">
+                        {r.daire}
+                      </td>
+                      <td className="px-4 py-2 text-[#3A4654]">{r.month}</td>
+                      <td className="px-4 py-2 text-[#6B7A8D]">{r.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="chart">
@@ -586,6 +742,47 @@ export default function DuesTracking({ buildingId, isOwner, t }: Props) {
               className="w-full bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full"
             >
               {t.applyToAll}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rate Dialog */}
+      <Dialog open={showRateDialog} onOpenChange={setShowRateDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-4 h-4" /> Gecikme Faizi Ayarı
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-[#6B7A8D]">
+              Vadesi geçmiş aidat borcu için günlük uygulanacak faiz oranını
+              belirleyin.
+            </p>
+            <div>
+              <p className="text-sm font-medium text-[#3A4654] mb-1">
+                Günlük Faiz Oranı (%)
+              </p>
+              <Input
+                data-ocid="dues.input"
+                type="number"
+                step="0.01"
+                min="0"
+                value={rateInput}
+                onChange={(e) => setRateInput(e.target.value)}
+                placeholder="0.1"
+              />
+              <p className="text-xs text-[#6B7A8D] mt-1">
+                Aylık karşılığı: %{(Number(rateInput) * 30).toFixed(1)}
+              </p>
+            </div>
+            <Button
+              data-ocid="dues.submit_button"
+              onClick={handleSaveRate}
+              className="w-full bg-[#4A90D9] hover:bg-[#3B82C4] text-white rounded-full"
+            >
+              Kaydet
             </Button>
           </div>
         </DialogContent>

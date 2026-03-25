@@ -59,6 +59,39 @@ function getCountdown(deadline: string): string {
   return `${hours}sa ${mins}dk kaldı`;
 }
 
+const SURVEY_TEMPLATES = [
+  {
+    key: "memnuniyet",
+    title: "Memnuniyet Anketi",
+    desc: "Sakinlerin bina hizmetlerinden memnuniyetini ölçer",
+    options: [
+      "Çok Memnunum",
+      "Memnunum",
+      "Kararsızım",
+      "Memnun Değilim",
+      "Hiç Memnun Değilim",
+    ],
+  },
+  {
+    key: "tadilat",
+    title: "Tadilat İzni Oylaması",
+    desc: "Planlanan tadilat için komşu onayı alır",
+    options: ["Onaylıyorum", "Koşullu Onaylıyorum", "Reddediyorum"],
+  },
+  {
+    key: "butce",
+    title: "Bütçe Onayı",
+    desc: "Yıllık bütçe planı için sakin onayı",
+    options: ["Kabul Ediyorum", "Değişiklik Öneriyorum", "Reddediyorum"],
+  },
+  {
+    key: "yonetim",
+    title: "Yönetim Değerlendirme",
+    desc: "Yönetim ekibinin performansını değerlendirir",
+    options: ["Çok İyi", "İyi", "Orta", "Kötü"],
+  },
+];
+
 export default function SurveyManagement({
   buildingId,
   userId,
@@ -353,6 +386,95 @@ export default function SurveyManagement({
         </div>
       </div>
 
+      {/* Template Library */}
+      {isOwner && (
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E5EAF2] p-5 mb-6">
+          <h3 className="font-semibold text-[#0E1116] mb-3">
+            📋 Şablon Kütüphanesi
+          </h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {SURVEY_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.key}
+                type="button"
+                onClick={() => {
+                  setForm({
+                    title: tpl.title,
+                    description: tpl.desc,
+                    options: tpl.options,
+                    deadline: "",
+                    anonymous: false,
+                  });
+                  setShowDialog(true);
+                }}
+                className="text-left p-3 bg-[#F3F6FB] rounded-xl hover:bg-[#E5EAF2] transition-colors"
+                data-ocid="surveys.button"
+              >
+                <p className="font-semibold text-sm text-[#0E1116]">
+                  {tpl.title}
+                </p>
+                <p className="text-xs text-[#6B7A8D] mt-1">{tpl.desc}</p>
+                <p className="text-xs text-[#4A90D9] mt-2">Şablonu Kullan →</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Period Comparison */}
+      {closed.length >= 2 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-[#E5EAF2] p-5 mb-6">
+          <h3 className="font-semibold text-[#0E1116] mb-3">
+            📊 Dönem Karşılaştırması
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            {[closed[closed.length - 1], closed[closed.length - 2]].map(
+              (s, i) => {
+                const total = s.options.reduce(
+                  (a: number, o: any) => a + o.votes.length,
+                  0,
+                );
+                return (
+                  <div
+                    key={s.id}
+                    className={`p-4 rounded-xl border-2 ${i === 0 ? "border-[#4A90D9] bg-blue-50" : "border-[#E5EAF2] bg-[#F3F6FB]"}`}
+                  >
+                    <p className="font-semibold text-sm text-[#0E1116] mb-1">
+                      {s.title}
+                    </p>
+                    <p className="text-xs text-[#6B7A8D] mb-2">
+                      {i === 0 ? "Son Dönem" : "Önceki Dönem"} · {total} oy
+                    </p>
+                    <div className="space-y-1.5">
+                      {s.options.map((o: any) => {
+                        const pct =
+                          total > 0
+                            ? Math.round((o.votes.length / total) * 100)
+                            : 0;
+                        return (
+                          <div key={o.id}>
+                            <div className="flex justify-between text-xs mb-0.5">
+                              <span className="text-[#3A4654]">{o.text}</span>
+                              <span className="font-medium">{pct}%</span>
+                            </div>
+                            <div className="h-1.5 bg-white rounded-full">
+                              <div
+                                className="h-1.5 rounded-full bg-[#4A90D9]"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              },
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Category breakdown for closed surveys */}
       {closed.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-[#E5EAF2] p-5 mb-6">
@@ -479,7 +601,6 @@ export default function SurveyManagement({
                           labelLine={false}
                         >
                           {chartData.map((entry) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: recharts Cell
                             <Cell key={entry.name} fill={entry.fill} />
                           ))}
                         </Pie>
@@ -502,7 +623,6 @@ export default function SurveyManagement({
                         <Tooltip formatter={(v) => [`${v} oy`]} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                           {chartData.map((entry) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: recharts Cell
                             <Cell key={entry.name} fill={entry.fill} />
                           ))}
                         </Bar>
