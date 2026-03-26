@@ -59,7 +59,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -81,70 +81,74 @@ import type {
   Role,
   UserWithRoles,
 } from "../types";
-import AccessKeyManagement from "./AccessKeyManagement";
-import ApartmentManagement from "./ApartmentManagement";
-import ApartmentValuation from "./ApartmentValuation";
-import BudgetAccounting from "./BudgetAccounting";
-import BudgetPlanning from "./BudgetPlanning";
-import BuildingMediaArchive from "./BuildingMediaArchive";
-import BuildingRules from "./BuildingRules";
-import BuildingSettings from "./BuildingSettings";
-import BulletinBoard from "./BulletinBoard";
-import CleaningSchedule from "./CleaningSchedule";
-import CommitteeManagement from "./CommitteeManagement";
-import CommonAreaReservation from "./CommonAreaReservation";
-import ComplaintBox from "./ComplaintBox";
-import DepotManagement from "./DepotManagement";
-import DigitalBulletin from "./DigitalBulletin";
-import DisabledElderlySupport from "./DisabledElderlySupport";
-import DocumentManagement from "./DocumentManagement";
-import DuesPaymentPlan from "./DuesPaymentPlan";
-import DuesTracking from "./DuesTracking";
-import ElectionManagement from "./ElectionManagement";
-import EmergencyActionPlan from "./EmergencyActionPlan";
-import EmergencyContacts from "./EmergencyContacts";
-import EnergyEfficiency from "./EnergyEfficiency";
-import ExpenseTracking from "./ExpenseTracking";
-import GuestParking from "./GuestParking";
-import HeatingCostDistribution from "./HeatingCostDistribution";
-import HelpCenter from "./HelpCenter";
-import InsuranceWarranty from "./InsuranceWarranty";
-import InvoiceTracking from "./InvoiceTracking";
-import LegalDebtTracking from "./LegalDebtTracking";
-import LostFound from "./LostFound";
-import MaintenanceSchedule from "./MaintenanceSchedule";
-import ManagementActivityReport from "./ManagementActivityReport";
-import MeetingManagement from "./MeetingManagement";
-import MeterTracking from "./MeterTracking";
-import MovingManagement from "./MovingManagement";
-import NeighborForum from "./NeighborForum";
-import NotificationCenter from "./NotificationCenter";
-import PackageTracking from "./PackageTracking";
-import ParkingAllocation from "./ParkingAllocation";
-import PetManagement from "./PetManagement";
-import ProfileSettings from "./ProfileSettings";
-import ProjectManagement from "./ProjectManagement";
-import RenovationPermits from "./RenovationPermits";
-import RepairQuoteManagement from "./RepairQuoteManagement";
-import ReportingCenter from "./ReportingCenter";
-import ResidentOnboarding from "./ResidentOnboarding";
-import ResidentSatisfaction from "./ResidentSatisfaction";
-import ResidentTasks from "./ResidentTasks";
-import SecurityIncidents from "./SecurityIncidents";
-import ServiceProviders from "./ServiceProviders";
-import StaffManagement from "./StaffManagement";
-import SubscriptionTracking from "./SubscriptionTracking";
-import SupplierContractPerformance from "./SupplierContractPerformance";
-import SurveyManagement from "./SurveyManagement";
-import VehicleParking from "./VehicleParking";
-import VisitorManagement from "./VisitorManagement";
-import VisitorPreAuth from "./VisitorPreAuth";
-import WasteManagement from "./WasteManagement";
-import WorkOrderManagement from "./WorkOrderManagement";
+const AccessKeyManagement = lazy(() => import("./AccessKeyManagement"));
+const ApartmentManagement = lazy(() => import("./ApartmentManagement"));
+const ApartmentValuation = lazy(() => import("./ApartmentValuation"));
+const BudgetAccounting = lazy(() => import("./BudgetAccounting"));
+const BudgetPlanning = lazy(() => import("./BudgetPlanning"));
+const BuildingMediaArchive = lazy(() => import("./BuildingMediaArchive"));
+const BuildingRules = lazy(() => import("./BuildingRules"));
+const BuildingSettings = lazy(() => import("./BuildingSettings"));
+const BulletinBoard = lazy(() => import("./BulletinBoard"));
+const CleaningSchedule = lazy(() => import("./CleaningSchedule"));
+const CommitteeManagement = lazy(() => import("./CommitteeManagement"));
+const CommonAreaReservation = lazy(() => import("./CommonAreaReservation"));
+const ComplaintBox = lazy(() => import("./ComplaintBox"));
+const DepotManagement = lazy(() => import("./DepotManagement"));
+const DigitalBulletin = lazy(() => import("./DigitalBulletin"));
+const DisabledElderlySupport = lazy(() => import("./DisabledElderlySupport"));
+const DocumentManagement = lazy(() => import("./DocumentManagement"));
+const DuesPaymentPlan = lazy(() => import("./DuesPaymentPlan"));
+const DuesTracking = lazy(() => import("./DuesTracking"));
+const ElectionManagement = lazy(() => import("./ElectionManagement"));
+const EmergencyActionPlan = lazy(() => import("./EmergencyActionPlan"));
+const EmergencyContacts = lazy(() => import("./EmergencyContacts"));
+const EnergyEfficiency = lazy(() => import("./EnergyEfficiency"));
+const ExpenseTracking = lazy(() => import("./ExpenseTracking"));
+const GuestParking = lazy(() => import("./GuestParking"));
+const HeatingCostDistribution = lazy(() => import("./HeatingCostDistribution"));
+const HelpCenter = lazy(() => import("./HelpCenter"));
+const InsuranceWarranty = lazy(() => import("./InsuranceWarranty"));
+const InvoiceTracking = lazy(() => import("./InvoiceTracking"));
+const LegalDebtTracking = lazy(() => import("./LegalDebtTracking"));
+const LostFound = lazy(() => import("./LostFound"));
+const MaintenanceSchedule = lazy(() => import("./MaintenanceSchedule"));
+const ManagementActivityReport = lazy(
+  () => import("./ManagementActivityReport"),
+);
+const MeetingManagement = lazy(() => import("./MeetingManagement"));
+const MeterTracking = lazy(() => import("./MeterTracking"));
+const MovingManagement = lazy(() => import("./MovingManagement"));
+const NeighborForum = lazy(() => import("./NeighborForum"));
+const NotificationCenter = lazy(() => import("./NotificationCenter"));
+const PackageTracking = lazy(() => import("./PackageTracking"));
+const ParkingAllocation = lazy(() => import("./ParkingAllocation"));
+const PetManagement = lazy(() => import("./PetManagement"));
+const ProfileSettings = lazy(() => import("./ProfileSettings"));
+const ProjectManagement = lazy(() => import("./ProjectManagement"));
+const RenovationPermits = lazy(() => import("./RenovationPermits"));
+const RepairQuoteManagement = lazy(() => import("./RepairQuoteManagement"));
+const ReportingCenter = lazy(() => import("./ReportingCenter"));
+const ResidentOnboarding = lazy(() => import("./ResidentOnboarding"));
+const ResidentSatisfaction = lazy(() => import("./ResidentSatisfaction"));
+const ResidentTasks = lazy(() => import("./ResidentTasks"));
+const SecurityIncidents = lazy(() => import("./SecurityIncidents"));
+const ServiceProviders = lazy(() => import("./ServiceProviders"));
+const StaffManagement = lazy(() => import("./StaffManagement"));
+const SubscriptionTracking = lazy(() => import("./SubscriptionTracking"));
+const SupplierContractPerformance = lazy(
+  () => import("./SupplierContractPerformance"),
+);
+const SurveyManagement = lazy(() => import("./SurveyManagement"));
+const VehicleParking = lazy(() => import("./VehicleParking"));
+const VisitorManagement = lazy(() => import("./VisitorManagement"));
+const VisitorPreAuth = lazy(() => import("./VisitorPreAuth"));
+const WasteManagement = lazy(() => import("./WasteManagement"));
+const WorkOrderManagement = lazy(() => import("./WorkOrderManagement"));
 
-import DuesTransparency from "./DuesTransparency";
-import FacilityEquipment from "./FacilityEquipment";
-import ResidentServiceRequests from "./ResidentServiceRequests";
+const DuesTransparency = lazy(() => import("./DuesTransparency"));
+const FacilityEquipment = lazy(() => import("./FacilityEquipment"));
+const ResidentServiceRequests = lazy(() => import("./ResidentServiceRequests"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -2193,459 +2197,471 @@ export default function BuildingPanel() {
           )}
 
           {/* Apartments */}
-          {activeTab === "apartments" && buildingId && (
-            <ApartmentManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center p-12 text-gray-400">
+                Yükleniyor...
+              </div>
+            }
+          >
+            {activeTab === "apartments" && buildingId && (
+              <ApartmentManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
 
-          {/* Dues */}
-          {activeTab === "dues" && buildingId && (
-            <DuesTracking
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
+            {/* Dues */}
+            {activeTab === "dues" && buildingId && (
+              <DuesTracking
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
 
-          {/* Visitors */}
-          {activeTab === "visitors" && buildingId && (
-            <VisitorManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
+            {/* Visitors */}
+            {activeTab === "visitors" && buildingId && (
+              <VisitorManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
 
-          {/* Expenses */}
-          {activeTab === "expenses" && buildingId && (
-            <ExpenseTracking
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
+            {/* Expenses */}
+            {activeTab === "expenses" && buildingId && (
+              <ExpenseTracking
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
 
-          {/* Surveys */}
-          {activeTab === "surveys" && buildingId && (
-            <SurveyManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
+            {/* Surveys */}
+            {activeTab === "surveys" && buildingId && (
+              <SurveyManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
 
-          {/* Building Settings */}
-          {activeTab === "buildingSettings" && buildingId && (
-            <BuildingSettings
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-              building={building}
-            />
-          )}
+            {/* Building Settings */}
+            {activeTab === "buildingSettings" && buildingId && (
+              <BuildingSettings
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+                building={building}
+              />
+            )}
 
-          {/* Profile Settings */}
-          {activeTab === "profile" && (
-            <ProfileSettings userId={userId || ""} t={t} />
-          )}
+            {/* Profile Settings */}
+            {activeTab === "profile" && (
+              <ProfileSettings userId={userId || ""} t={t} />
+            )}
 
-          {/* Documents */}
-          {activeTab === "documents" && buildingId && (
-            <DocumentManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "meetings" && buildingId && userId && (
-            <MeetingManagement
-              userId={userId}
-              isOwnerOrManager={isOwner || hasPermission("manage_users")}
-            />
-          )}
-          {activeTab === "commonAreas" && buildingId && userId && (
-            <CommonAreaReservation
-              userId={userId}
-              isOwnerOrManager={isOwner || hasPermission("manage_users")}
-            />
-          )}
-          {activeTab === "notifications" && buildingId && userId && (
-            <NotificationCenter
-              userId={userId}
-              isOwnerOrManager={
-                isOwner || hasPermission("manage_announcements")
-              }
-            />
-          )}
-          {activeTab === "vehicles" && buildingId && (
-            <VehicleParking
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "meters" && buildingId && (
-            <MeterTracking
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "complaints" && buildingId && (
-            <ComplaintBox
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "emergency" && buildingId && (
-            <EmergencyContacts
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "packages" && buildingId && (
-            <PackageTracking
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "staffMgmt" && buildingId && (
-            <StaffManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "budget" && buildingId && (
-            <BudgetAccounting
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "buildingRules" && buildingId && (
-            <BuildingRules
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "security" && buildingId && userId && (
-            <SecurityIncidents
-              buildingId={buildingId}
-              userId={userId}
-              isOwnerOrManager={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "energy" && buildingId && (
-            <EnergyEfficiency
-              buildingId={buildingId}
-              isOwnerOrManager={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "lostFound" && buildingId && userId && (
-            <LostFound
-              buildingId={buildingId}
-              userId={userId}
-              isOwnerOrManager={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "maintSchedule" && buildingId && (
-            <MaintenanceSchedule
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "serviceProviders" && buildingId && (
-            <ServiceProviders
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "bulletin" && buildingId && (
-            <BulletinBoard
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "moving" && buildingId && (
-            <MovingManagement
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "cleaning" && buildingId && (
-            <CleaningSchedule
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "insurance" && buildingId && (
-            <InsuranceWarranty
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
+            {/* Documents */}
+            {activeTab === "documents" && buildingId && (
+              <DocumentManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "meetings" && buildingId && userId && (
+              <MeetingManagement
+                userId={userId}
+                isOwnerOrManager={isOwner || hasPermission("manage_users")}
+              />
+            )}
+            {activeTab === "commonAreas" && buildingId && userId && (
+              <CommonAreaReservation
+                userId={userId}
+                isOwnerOrManager={isOwner || hasPermission("manage_users")}
+              />
+            )}
+            {activeTab === "notifications" && buildingId && userId && (
+              <NotificationCenter
+                userId={userId}
+                isOwnerOrManager={
+                  isOwner || hasPermission("manage_announcements")
+                }
+              />
+            )}
+            {activeTab === "vehicles" && buildingId && (
+              <VehicleParking
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "meters" && buildingId && (
+              <MeterTracking
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "complaints" && buildingId && (
+              <ComplaintBox
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "emergency" && buildingId && (
+              <EmergencyContacts
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "packages" && buildingId && (
+              <PackageTracking
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "staffMgmt" && buildingId && (
+              <StaffManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "budget" && buildingId && (
+              <BudgetAccounting
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "buildingRules" && buildingId && (
+              <BuildingRules
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "security" && buildingId && userId && (
+              <SecurityIncidents
+                buildingId={buildingId}
+                userId={userId}
+                isOwnerOrManager={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "energy" && buildingId && (
+              <EnergyEfficiency
+                buildingId={buildingId}
+                isOwnerOrManager={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "lostFound" && buildingId && userId && (
+              <LostFound
+                buildingId={buildingId}
+                userId={userId}
+                isOwnerOrManager={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "maintSchedule" && buildingId && (
+              <MaintenanceSchedule
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "serviceProviders" && buildingId && (
+              <ServiceProviders
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "bulletin" && buildingId && (
+              <BulletinBoard
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "moving" && buildingId && (
+              <MovingManagement
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "cleaning" && buildingId && (
+              <CleaningSchedule
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "insurance" && buildingId && (
+              <InsuranceWarranty
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
 
-          {activeTab === "reporting" && buildingId && (
-            <ReportingCenter buildingId={buildingId} t={t} />
-          )}
-          {activeTab === "committee" && buildingId && (
-            <CommitteeManagement
-              buildingId={buildingId}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "subscriptions" && buildingId && (
-            <SubscriptionTracking
-              buildingId={buildingId}
-              isOwner={isOwner || hasPermission("manage_users")}
-              t={t}
-            />
-          )}
-          {activeTab === "renovationPermits" && buildingId && (
-            <RenovationPermits
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "forum" && buildingId && (
-            <NeighborForum
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "visitorPreAuth" && buildingId && (
-            <VisitorPreAuth
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "helpCenter" && buildingId && (
-            <HelpCenter
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "budgetPlanning" && buildingId && (
-            <BudgetPlanning
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "duesPaymentPlan" && buildingId && (
-            <DuesPaymentPlan
-              buildingId={buildingId}
-              userId={userId || ""}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "emergencyPlan" && buildingId && (
-            <EmergencyActionPlan
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "residentSatisfaction" && buildingId && (
-            <ResidentSatisfaction buildingId={buildingId} t={t} />
-          )}
-          {activeTab === "apartmentValuation" && buildingId && (
-            <ApartmentValuation buildingId={buildingId} t={t} />
-          )}
-          {activeTab === "wasteManagement" && buildingId && (
-            <WasteManagement buildingId={buildingId} t={t} />
-          )}
-          {activeTab === "petManagement" && buildingId && (
-            <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
-          )}
-          {activeTab === "legalDebt" && buildingId && (
-            <LegalDebtTracking
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "guestParking" && buildingId && (
-            <GuestParking buildingId={buildingId} isOwner={isOwner} t={t} />
-          )}
-          {activeTab === "mediaArchive" && buildingId && (
-            <BuildingMediaArchive
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "projectManagement" && buildingId && (
-            <ProjectManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "election" && buildingId && (
-            <ElectionManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t}
-            />
-          )}
-          {activeTab === "digitalBulletin" && buildingId && (
-            <DigitalBulletin buildingId={buildingId} isOwner={isOwner} t={t} />
-          )}
-          {activeTab === "depot" && buildingId && (
-            <DepotManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "residentOnboarding" && buildingId && (
-            <ResidentOnboarding
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "accessKeys" && buildingId && (
-            <AccessKeyManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "workOrders" && buildingId && (
-            <WorkOrderManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "invoiceTracking" && buildingId && (
-            <InvoiceTracking
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "repairQuotes" && buildingId && (
-            <RepairQuoteManagement
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "heatingCost" && buildingId && (
-            <HeatingCostDistribution
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "activityReport" && buildingId && (
-            <ManagementActivityReport
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "residentTasks" && buildingId && (
-            <ResidentTasks
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "parkingAllocation" && buildingId && (
-            <ParkingAllocation
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "disabledSupport" && buildingId && (
-            <DisabledElderlySupport
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "supplierContracts" && buildingId && (
-            <SupplierContractPerformance
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "facilityEquipment" && buildingId && (
-            <FacilityEquipment
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "duesTransparency" && buildingId && (
-            <DuesTransparency
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
-          {activeTab === "serviceRequests" && buildingId && (
-            <ResidentServiceRequests
-              buildingId={buildingId}
-              isOwner={isOwner}
-              t={t as any}
-            />
-          )}
+            {activeTab === "reporting" && buildingId && (
+              <ReportingCenter buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "committee" && buildingId && (
+              <CommitteeManagement
+                buildingId={buildingId}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "subscriptions" && buildingId && (
+              <SubscriptionTracking
+                buildingId={buildingId}
+                isOwner={isOwner || hasPermission("manage_users")}
+                t={t}
+              />
+            )}
+            {activeTab === "renovationPermits" && buildingId && (
+              <RenovationPermits
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "forum" && buildingId && (
+              <NeighborForum
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "visitorPreAuth" && buildingId && (
+              <VisitorPreAuth
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "helpCenter" && buildingId && (
+              <HelpCenter
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "budgetPlanning" && buildingId && (
+              <BudgetPlanning
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "duesPaymentPlan" && buildingId && (
+              <DuesPaymentPlan
+                buildingId={buildingId}
+                userId={userId || ""}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "emergencyPlan" && buildingId && (
+              <EmergencyActionPlan
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "residentSatisfaction" && buildingId && (
+              <ResidentSatisfaction buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "apartmentValuation" && buildingId && (
+              <ApartmentValuation buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "wasteManagement" && buildingId && (
+              <WasteManagement buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "petManagement" && buildingId && (
+              <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
+            )}
+            {activeTab === "legalDebt" && buildingId && (
+              <LegalDebtTracking
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "guestParking" && buildingId && (
+              <GuestParking buildingId={buildingId} isOwner={isOwner} t={t} />
+            )}
+            {activeTab === "mediaArchive" && buildingId && (
+              <BuildingMediaArchive
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "projectManagement" && buildingId && (
+              <ProjectManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "election" && buildingId && (
+              <ElectionManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "digitalBulletin" && buildingId && (
+              <DigitalBulletin
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t}
+              />
+            )}
+            {activeTab === "depot" && buildingId && (
+              <DepotManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "residentOnboarding" && buildingId && (
+              <ResidentOnboarding
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "accessKeys" && buildingId && (
+              <AccessKeyManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "workOrders" && buildingId && (
+              <WorkOrderManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "invoiceTracking" && buildingId && (
+              <InvoiceTracking
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "repairQuotes" && buildingId && (
+              <RepairQuoteManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "heatingCost" && buildingId && (
+              <HeatingCostDistribution
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "activityReport" && buildingId && (
+              <ManagementActivityReport
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "residentTasks" && buildingId && (
+              <ResidentTasks
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "parkingAllocation" && buildingId && (
+              <ParkingAllocation
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "disabledSupport" && buildingId && (
+              <DisabledElderlySupport
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "supplierContracts" && buildingId && (
+              <SupplierContractPerformance
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "facilityEquipment" && buildingId && (
+              <FacilityEquipment
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "duesTransparency" && buildingId && (
+              <DuesTransparency
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "serviceRequests" && buildingId && (
+              <ResidentServiceRequests
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+          </Suspense>
         </main>
       </div>
 
