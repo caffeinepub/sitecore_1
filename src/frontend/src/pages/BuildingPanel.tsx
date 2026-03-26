@@ -149,6 +149,8 @@ const WorkOrderManagement = lazy(() => import("./WorkOrderManagement"));
 const DuesTransparency = lazy(() => import("./DuesTransparency"));
 const FacilityEquipment = lazy(() => import("./FacilityEquipment"));
 const ResidentServiceRequests = lazy(() => import("./ResidentServiceRequests"));
+const ChildSportsFacility = lazy(() => import("./ChildSportsFacility"));
+const DisasterPreparedness = lazy(() => import("./DisasterPreparedness"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -801,6 +803,18 @@ export default function BuildingPanel() {
       key: "serviceRequests",
       label: "Hizmet Talepleri",
       icon: Lightbulb,
+      show: true,
+    },
+    {
+      key: "childSportsFacility",
+      label: "Çocuk & Spor Tesisi",
+      icon: Users,
+      show: true,
+    },
+    {
+      key: "disasterPreparedness",
+      label: "Afet Hazırlık & Sigorta",
+      icon: Shield,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2656,6 +2670,20 @@ export default function BuildingPanel() {
             )}
             {activeTab === "serviceRequests" && buildingId && (
               <ResidentServiceRequests
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "childSportsFacility" && buildingId && (
+              <ChildSportsFacility
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "disasterPreparedness" && buildingId && (
+              <DisasterPreparedness
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
