@@ -12,6 +12,7 @@ import {
   CheckSquare,
   ChevronDown,
   ChevronUp,
+  ClipboardCheck,
   ClipboardList,
   Copy,
   CreditCard,
@@ -160,6 +161,7 @@ const ResidentProfile = lazy(() => import("./ResidentProfile"));
 const DisputeResolution = lazy(() => import("./DisputeResolution"));
 const BuildingTechSpec = lazy(() => import("./BuildingTechSpec"));
 const SocialEvents = lazy(() => import("./SocialEvents"));
+const StaffLeaveManagement = lazy(() => import("./StaffLeaveManagement"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -873,6 +875,12 @@ export default function BuildingPanel() {
       label: "Sosyal Etkinlikler",
       icon: PartyPopper,
       show: true,
+    },
+    {
+      key: "staffLeave",
+      label: "Personel İzin & Mesai",
+      icon: ClipboardCheck,
+      show: isOwner,
     },
   ].filter((tab) => tab.show);
 
@@ -2798,6 +2806,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "socialEvents" && buildingId && (
               <SocialEvents
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "staffLeave" && buildingId && (
+              <StaffLeaveManagement
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
