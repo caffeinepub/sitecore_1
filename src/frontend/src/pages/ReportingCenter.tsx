@@ -1,12 +1,14 @@
 import {
   AlertTriangle,
   Calendar,
+  Clock,
   DollarSign,
   Download,
   FileSpreadsheet,
   Home,
   Package,
   Printer,
+  SmilePlus,
   TrendingDown,
   TrendingUp,
   Users,
@@ -99,6 +101,53 @@ const OCCUPANCY_DATA = [
   { ay: "Mar", dolu: 39, bos: 1 },
 ];
 
+const PERIOD_COMPARISON_DATA = [
+  { metrik: "Tahsilat %", buDonem: 94.5, gecenDonem: 92.4 },
+  { metrik: "Bakım %", buDonem: 68, gecenDonem: 61 },
+  { metrik: "Şikayet", buDonem: 7, gecenDonem: 11 },
+  { metrik: "İş Emri", buDonem: 12, gecenDonem: 15 },
+  { metrik: "Ziyaretçi", buDonem: 127, gecenDonem: 113 },
+  { metrik: "Doluluk %", buDonem: 97.5, gecenDonem: 95 },
+];
+
+const STAFF_PERFORMANCE_DATA = [
+  {
+    ad: "Ahmet Y.",
+    gorev: "Teknik",
+    tamamlanan: 24,
+    ortSure: "2.1 gün",
+    puan: 4.7,
+  },
+  {
+    ad: "Mehmet K.",
+    gorev: "Temizlik",
+    tamamlanan: 31,
+    ortSure: "0.5 gün",
+    puan: 4.4,
+  },
+  {
+    ad: "Ayşe D.",
+    gorev: "Güvenlik",
+    tamamlanan: 18,
+    ortSure: "1.2 gün",
+    puan: 3.9,
+  },
+  {
+    ad: "Fatma S.",
+    gorev: "Yönetim",
+    tamamlanan: 42,
+    ortSure: "3.0 gün",
+    puan: 4.8,
+  },
+  {
+    ad: "Can T.",
+    gorev: "Bahçe",
+    tamamlanan: 15,
+    ortSure: "1.8 gün",
+    puan: 3.2,
+  },
+];
+
 const TEMPLATES = [
   {
     key: "finansal",
@@ -155,6 +204,7 @@ interface KPICardProps {
   bgColor: string;
   trend?: "up" | "down" | null;
   trendValue?: string;
+  trendColor?: "green" | "red" | "orange";
 }
 
 function KPICard({
@@ -165,7 +215,14 @@ function KPICard({
   bgColor,
   trend,
   trendValue,
+  trendColor,
 }: KPICardProps) {
+  const tc =
+    trendColor === "orange"
+      ? "text-orange-500"
+      : trend === "up"
+        ? "text-green-600"
+        : "text-red-500";
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5EAF2] hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
@@ -176,7 +233,7 @@ function KPICard({
         </div>
         {trend && trendValue && (
           <span
-            className={`flex items-center gap-0.5 text-xs font-semibold ${trend === "up" ? "text-green-600" : "text-red-500"}`}
+            className={`flex items-center gap-0.5 text-xs font-semibold ${tc}`}
           >
             {trend === "up" ? (
               <TrendingUp className="w-3 h-3" />
@@ -344,6 +401,9 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
           </TabsTrigger>
           <TabsTrigger value="sakin" data-ocid="reporting.tab">
             Sakin & Bina
+          </TabsTrigger>
+          <TabsTrigger value="performans" data-ocid="reporting.tab">
+            Performans
           </TabsTrigger>
         </TabsList>
 
@@ -614,7 +674,13 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
                       {eq.name}
                     </span>
                     <Badge
-                      className={`${eq.color === "green" ? "bg-green-50 text-green-700" : eq.color === "orange" ? "bg-orange-50 text-orange-700" : "bg-red-50 text-red-700"} border-0 text-xs`}
+                      className={`${
+                        eq.color === "green"
+                          ? "bg-green-50 text-green-700"
+                          : eq.color === "orange"
+                            ? "bg-orange-50 text-orange-700"
+                            : "bg-red-50 text-red-700"
+                      } border-0 text-xs`}
                     >
                       {eq.status}
                     </Badge>
@@ -703,6 +769,152 @@ export default function ReportingCenter({ buildingId, t: _t }: Props) {
                 <TrendingDown className="w-3 h-3 text-blue-500" />
                 <span className="text-xs text-blue-600">-1 geçen aya göre</span>
               </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Performans */}
+        <TabsContent value="performans">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <KPICard
+              label="Açık İş Emirleri"
+              value="7"
+              icon={Wrench}
+              color="text-orange-600"
+              bgColor="bg-orange-50"
+              trend="up"
+              trendValue="+2 geçen ay"
+              trendColor="orange"
+            />
+            <KPICard
+              label="Ort. Çözüm Süresi"
+              value="3.8 gün"
+              icon={Clock}
+              color="text-green-600"
+              bgColor="bg-green-50"
+              trend="down"
+              trendValue="-0.4 gün iyileşme"
+              trendColor="green"
+            />
+            <KPICard
+              label="Tahsilat Oranı"
+              value="%94.5"
+              icon={DollarSign}
+              color="text-green-600"
+              bgColor="bg-green-50"
+              trend="up"
+              trendValue="+%2.1 geçen ay"
+              trendColor="green"
+            />
+            <KPICard
+              label="Sakin Memnuniyeti"
+              value="4.2 / 5"
+              icon={SmilePlus}
+              color="text-green-600"
+              bgColor="bg-green-50"
+              trend="up"
+              trendValue="+0.3 geçen ay"
+              trendColor="green"
+            />
+          </div>
+
+          {/* Period Comparison Chart */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5EAF2] mb-6">
+            <h3 className="font-semibold text-[#0E1116] mb-4">
+              Dönem Karşılaştırması (Bu Ay vs Geçen Ay)
+            </h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={PERIOD_COMPARISON_DATA}
+                margin={{ top: 4, right: 16, left: 0, bottom: 4 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="metrik" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="buDonem"
+                  name="Bu Dönem"
+                  fill="#0B1B2E"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="gecenDonem"
+                  name="Geçen Dönem"
+                  fill="#CBD5E1"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Staff Performance Table */}
+          <div className="bg-white rounded-2xl shadow-sm border border-[#E5EAF2] overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#F3F6FB]">
+              <h3 className="font-semibold text-[#0E1116]">
+                Personel Performans Özeti
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-[#F3F6FB]">
+                  <tr>
+                    <th className="text-left px-5 py-3 text-[#6B7A8D] font-medium">
+                      Ad Soyad
+                    </th>
+                    <th className="text-left px-5 py-3 text-[#6B7A8D] font-medium">
+                      Görev
+                    </th>
+                    <th className="text-center px-5 py-3 text-[#6B7A8D] font-medium">
+                      Tamamlanan İş
+                    </th>
+                    <th className="text-center px-5 py-3 text-[#6B7A8D] font-medium">
+                      Ort. Süre
+                    </th>
+                    <th className="text-center px-5 py-3 text-[#6B7A8D] font-medium">
+                      Puan
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F3F6FB]">
+                  {STAFF_PERFORMANCE_DATA.map((s, i) => {
+                    const puanColor =
+                      s.puan >= 4.5
+                        ? "bg-green-50 text-green-700"
+                        : s.puan >= 3.5
+                          ? "bg-yellow-50 text-yellow-700"
+                          : "bg-red-50 text-red-700";
+                    return (
+                      <tr
+                        // biome-ignore lint/suspicious/noArrayIndexKey: static list
+                        key={i}
+                        className="hover:bg-[#FAFBFD] transition-colors"
+                        data-ocid={`reporting.row.${i + 1}`}
+                      >
+                        <td className="px-5 py-3 font-medium text-[#0E1116]">
+                          {s.ad}
+                        </td>
+                        <td className="px-5 py-3 text-[#6B7A8D]">{s.gorev}</td>
+                        <td className="px-5 py-3 text-center font-semibold text-[#0B1B2E]">
+                          {s.tamamlanan}
+                        </td>
+                        <td className="px-5 py-3 text-center text-[#6B7A8D]">
+                          {s.ortSure}
+                        </td>
+                        <td className="px-5 py-3 text-center">
+                          <Badge
+                            className={`${puanColor} border-0 font-semibold`}
+                          >
+                            ★ {s.puan.toFixed(1)}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </TabsContent>
