@@ -153,6 +153,7 @@ const ChildSportsFacility = lazy(() => import("./ChildSportsFacility"));
 const DisasterPreparedness = lazy(() => import("./DisasterPreparedness"));
 const NeighborhoodGuide = lazy(() => import("./NeighborhoodGuide"));
 const ResidentRewards = lazy(() => import("./ResidentRewards"));
+const BoardDecisionRegister = lazy(() => import("./BoardDecisionRegister"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -829,6 +830,12 @@ export default function BuildingPanel() {
       key: "residentRewards",
       label: "Sakin Ödül & Teşvik",
       icon: Award,
+      show: true,
+    },
+    {
+      key: "boardDecisionRegister",
+      label: "Karar Defteri",
+      icon: BookOpen,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2712,6 +2719,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "residentRewards" && buildingId && (
               <ResidentRewards
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "boardDecisionRegister" && buildingId && (
+              <BoardDecisionRegister
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
