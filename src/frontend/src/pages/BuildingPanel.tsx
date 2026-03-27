@@ -154,6 +154,7 @@ const DisasterPreparedness = lazy(() => import("./DisasterPreparedness"));
 const NeighborhoodGuide = lazy(() => import("./NeighborhoodGuide"));
 const ResidentRewards = lazy(() => import("./ResidentRewards"));
 const BoardDecisionRegister = lazy(() => import("./BoardDecisionRegister"));
+const EmergencyServiceGuide = lazy(() => import("./EmergencyServiceGuide"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -836,6 +837,12 @@ export default function BuildingPanel() {
       key: "boardDecisionRegister",
       label: "Karar Defteri",
       icon: BookOpen,
+      show: true,
+    },
+    {
+      key: "emergencyServiceGuide",
+      label: "Acil Servis Rehberi",
+      icon: Phone,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2726,6 +2733,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "boardDecisionRegister" && buildingId && (
               <BoardDecisionRegister
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "emergencyServiceGuide" && buildingId && (
+              <EmergencyServiceGuide
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
