@@ -156,6 +156,7 @@ const ResidentRewards = lazy(() => import("./ResidentRewards"));
 const BoardDecisionRegister = lazy(() => import("./BoardDecisionRegister"));
 const EmergencyServiceGuide = lazy(() => import("./EmergencyServiceGuide"));
 const ResidentProfile = lazy(() => import("./ResidentProfile"));
+const DisputeResolution = lazy(() => import("./DisputeResolution"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -850,6 +851,12 @@ export default function BuildingPanel() {
       key: "residentProfile",
       label: "Sakin Profil & Tercihler",
       icon: User,
+      show: true,
+    },
+    {
+      key: "disputeResolution",
+      label: "Anlaşmazlık Çözüm",
+      icon: Scale,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2756,6 +2763,13 @@ export default function BuildingPanel() {
               <ResidentProfile
                 buildingId={buildingId}
                 userId={userId || ""}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "disputeResolution" && buildingId && (
+              <DisputeResolution
+                buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
               />
