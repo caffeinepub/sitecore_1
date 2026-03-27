@@ -33,6 +33,7 @@ import {
   MessagesSquare,
   Newspaper,
   Package,
+  PartyPopper,
   PawPrint,
   Phone,
   PieChart,
@@ -158,6 +159,7 @@ const EmergencyServiceGuide = lazy(() => import("./EmergencyServiceGuide"));
 const ResidentProfile = lazy(() => import("./ResidentProfile"));
 const DisputeResolution = lazy(() => import("./DisputeResolution"));
 const BuildingTechSpec = lazy(() => import("./BuildingTechSpec"));
+const SocialEvents = lazy(() => import("./SocialEvents"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -864,6 +866,12 @@ export default function BuildingPanel() {
       key: "buildingTechSpec",
       label: "Teknik Şartname & El Kitabı",
       icon: BookOpen,
+      show: true,
+    },
+    {
+      key: "socialEvents",
+      label: "Sosyal Etkinlikler",
+      icon: PartyPopper,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2783,6 +2791,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "buildingTechSpec" && buildingId && (
               <BuildingTechSpec
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "socialEvents" && buildingId && (
+              <SocialEvents
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
