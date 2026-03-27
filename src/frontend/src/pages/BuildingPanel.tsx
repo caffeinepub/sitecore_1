@@ -163,6 +163,9 @@ const BuildingTechSpec = lazy(() => import("./BuildingTechSpec"));
 const SocialEvents = lazy(() => import("./SocialEvents"));
 const StaffLeaveManagement = lazy(() => import("./StaffLeaveManagement"));
 const TenantManagement = lazy(() => import("./TenantManagement"));
+const VehicleMaintenanceTracking = lazy(
+  () => import("./VehicleMaintenanceTracking"),
+);
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -887,6 +890,12 @@ export default function BuildingPanel() {
       key: "tenantManagement",
       label: "Kiracı Yönetimi",
       icon: Users,
+      show: isOwner,
+    },
+    {
+      key: "vehicleMaintenance",
+      label: "Araç Bakım & Muayene",
+      icon: Car,
       show: isOwner,
     },
   ].filter((tab) => tab.show);
@@ -2831,6 +2840,9 @@ export default function BuildingPanel() {
                 isOwner={isOwner}
                 t={t as any}
               />
+            )}
+            {activeTab === "vehicleMaintenance" && (
+              <VehicleMaintenanceTracking t={t as any} />
             )}
           </Suspense>
         </main>
