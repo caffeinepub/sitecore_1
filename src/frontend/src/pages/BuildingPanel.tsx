@@ -162,6 +162,7 @@ const DisputeResolution = lazy(() => import("./DisputeResolution"));
 const BuildingTechSpec = lazy(() => import("./BuildingTechSpec"));
 const SocialEvents = lazy(() => import("./SocialEvents"));
 const StaffLeaveManagement = lazy(() => import("./StaffLeaveManagement"));
+const TenantManagement = lazy(() => import("./TenantManagement"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -880,6 +881,12 @@ export default function BuildingPanel() {
       key: "staffLeave",
       label: "Personel İzin & Mesai",
       icon: ClipboardCheck,
+      show: isOwner,
+    },
+    {
+      key: "tenantManagement",
+      label: "Kiracı Yönetimi",
+      icon: Users,
       show: isOwner,
     },
   ].filter((tab) => tab.show);
@@ -2813,6 +2820,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "staffLeave" && buildingId && (
               <StaffLeaveManagement
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "tenantManagement" && buildingId && (
+              <TenantManagement
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
