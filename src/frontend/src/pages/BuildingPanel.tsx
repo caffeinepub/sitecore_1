@@ -157,6 +157,7 @@ const BoardDecisionRegister = lazy(() => import("./BoardDecisionRegister"));
 const EmergencyServiceGuide = lazy(() => import("./EmergencyServiceGuide"));
 const ResidentProfile = lazy(() => import("./ResidentProfile"));
 const DisputeResolution = lazy(() => import("./DisputeResolution"));
+const BuildingTechSpec = lazy(() => import("./BuildingTechSpec"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -857,6 +858,12 @@ export default function BuildingPanel() {
       key: "disputeResolution",
       label: "Anlaşmazlık Çözüm",
       icon: Scale,
+      show: true,
+    },
+    {
+      key: "buildingTechSpec",
+      label: "Teknik Şartname & El Kitabı",
+      icon: BookOpen,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2769,6 +2776,13 @@ export default function BuildingPanel() {
             )}
             {activeTab === "disputeResolution" && buildingId && (
               <DisputeResolution
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "buildingTechSpec" && buildingId && (
+              <BuildingTechSpec
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
