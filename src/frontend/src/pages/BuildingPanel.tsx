@@ -151,6 +151,8 @@ const FacilityEquipment = lazy(() => import("./FacilityEquipment"));
 const ResidentServiceRequests = lazy(() => import("./ResidentServiceRequests"));
 const ChildSportsFacility = lazy(() => import("./ChildSportsFacility"));
 const DisasterPreparedness = lazy(() => import("./DisasterPreparedness"));
+const NeighborhoodGuide = lazy(() => import("./NeighborhoodGuide"));
+const ResidentRewards = lazy(() => import("./ResidentRewards"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -815,6 +817,18 @@ export default function BuildingPanel() {
       key: "disasterPreparedness",
       label: "Afet Hazırlık & Sigorta",
       icon: Shield,
+      show: true,
+    },
+    {
+      key: "neighborhoodGuide",
+      label: "Mahalle & Çevre Rehberi",
+      icon: MapPin,
+      show: true,
+    },
+    {
+      key: "residentRewards",
+      label: "Sakin Ödül & Teşvik",
+      icon: Award,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2684,6 +2698,20 @@ export default function BuildingPanel() {
             )}
             {activeTab === "disasterPreparedness" && buildingId && (
               <DisasterPreparedness
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "neighborhoodGuide" && buildingId && (
+              <NeighborhoodGuide
+                buildingId={buildingId}
+                isOwner={isOwner}
+                t={t as any}
+              />
+            )}
+            {activeTab === "residentRewards" && buildingId && (
+              <ResidentRewards
                 buildingId={buildingId}
                 isOwner={isOwner}
                 t={t as any}
