@@ -181,6 +181,7 @@ const ResidentSolidarity = lazy(() => import("./ResidentSolidarity"));
 const BuildingContactDirectory = lazy(
   () => import("./BuildingContactDirectory"),
 );
+const HealthHygieneInspection = lazy(() => import("./HealthHygieneInspection"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -989,6 +990,12 @@ export default function BuildingPanel() {
       key: "buildingContactDirectory",
       label: "Bina İletişim Rehberi",
       icon: Phone,
+      show: true,
+    },
+    {
+      key: "health-hygiene",
+      label: "Sağlık & Hijyen Denetimi",
+      icon: ShieldCheck,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2724,6 +2731,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "buildingContactDirectory" && buildingId && (
               <BuildingContactDirectory buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "health-hygiene" && buildingId && (
+              <HealthHygieneInspection buildingId={buildingId} />
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
