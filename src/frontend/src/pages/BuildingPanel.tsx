@@ -178,6 +178,9 @@ const EVChargingManagement = lazy(() => import("./EVChargingManagement"));
 const DigitalVisitorRegister = lazy(() => import("./DigitalVisitorRegister"));
 const SpecialDaysCelebrations = lazy(() => import("./SpecialDaysCelebrations"));
 const ResidentSolidarity = lazy(() => import("./ResidentSolidarity"));
+const BuildingContactDirectory = lazy(
+  () => import("./BuildingContactDirectory"),
+);
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -980,6 +983,12 @@ export default function BuildingPanel() {
       key: "residentSolidarity",
       label: "Sakin Dayanışma & Yardım Ağı",
       icon: Heart,
+      show: true,
+    },
+    {
+      key: "buildingContactDirectory",
+      label: "Bina İletişim Rehberi",
+      icon: Phone,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2712,6 +2721,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "residentSolidarity" && buildingId && (
               <ResidentSolidarity buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "buildingContactDirectory" && buildingId && (
+              <BuildingContactDirectory buildingId={buildingId} t={t} />
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
