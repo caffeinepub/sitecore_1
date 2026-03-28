@@ -133,6 +133,7 @@ const RenovationPermits = lazy(() => import("./RenovationPermits"));
 const RepairQuoteManagement = lazy(() => import("./RepairQuoteManagement"));
 const ReportingCenter = lazy(() => import("./ReportingCenter"));
 const ResidentOnboarding = lazy(() => import("./ResidentOnboarding"));
+const ResidentMarketplace = lazy(() => import("./ResidentMarketplace"));
 const ResidentSatisfaction = lazy(() => import("./ResidentSatisfaction"));
 const ResidentTasks = lazy(() => import("./ResidentTasks"));
 const SecurityIncidents = lazy(() => import("./SecurityIncidents"));
@@ -935,6 +936,24 @@ export default function BuildingPanel() {
       icon: TrendingUp,
       show: true,
     },
+    {
+      key: "residentSatisfaction",
+      label: "Sakin Memnuniyet & Geri Bildirim",
+      icon: Smile,
+      show: true,
+    },
+    {
+      key: "wasteManagement",
+      label: "Çevre & Atık Yönetimi",
+      icon: Leaf,
+      show: true,
+    },
+    {
+      key: "residentMarketplace",
+      label: "Komşu Takas & İlan Panosu",
+      icon: Store,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -1069,6 +1088,7 @@ export default function BuildingPanel() {
                     "residentSatisfaction",
                     "apartmentValuation",
                     "wasteManagement",
+                    "residentMarketplace",
                     "petManagement",
                     "guestParking",
                     "mediaArchive",
@@ -2647,6 +2667,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "wasteManagement" && buildingId && (
               <WasteManagement buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "residentMarketplace" && buildingId && (
+              <ResidentMarketplace buildingId={buildingId} t={t} />
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
