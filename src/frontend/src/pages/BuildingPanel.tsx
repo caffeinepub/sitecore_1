@@ -175,6 +175,9 @@ const InsuranceClaimManagement = lazy(
 const ReserveFundManagement = lazy(() => import("./ReserveFundManagement"));
 const WaterLeakManagement = lazy(() => import("./WaterLeakManagement"));
 const EVChargingManagement = lazy(() => import("./EVChargingManagement"));
+const DigitalVisitorRegister = lazy(() => import("./DigitalVisitorRegister"));
+const SpecialDaysCelebrations = lazy(() => import("./SpecialDaysCelebrations"));
+const ResidentSolidarity = lazy(() => import("./ResidentSolidarity"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -961,6 +964,24 @@ export default function BuildingPanel() {
       icon: Zap,
       show: true,
     },
+    {
+      key: "digitalVisitorRegister",
+      label: "Dijital Ziyaretçi Defteri",
+      icon: BookOpen,
+      show: true,
+    },
+    {
+      key: "specialDays",
+      label: "Özel Gün & Kutlama",
+      icon: PartyPopper,
+      show: true,
+    },
+    {
+      key: "residentSolidarity",
+      label: "Sakin Dayanışma & Yardım Ağı",
+      icon: Heart,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -1097,6 +1118,7 @@ export default function BuildingPanel() {
                     "wasteManagement",
                     "residentMarketplace",
                     "evCharging",
+                    "digitalVisitorRegister",
                     "petManagement",
                     "guestParking",
                     "mediaArchive",
@@ -2681,6 +2703,15 @@ export default function BuildingPanel() {
             )}
             {activeTab === "evCharging" && buildingId && (
               <EVChargingManagement buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "digitalVisitorRegister" && buildingId && (
+              <DigitalVisitorRegister buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "specialDays" && buildingId && (
+              <SpecialDaysCelebrations buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "residentSolidarity" && buildingId && (
+              <ResidentSolidarity buildingId={buildingId} t={t} />
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
