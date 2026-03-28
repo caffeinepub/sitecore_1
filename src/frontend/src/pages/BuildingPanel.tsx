@@ -174,6 +174,7 @@ const InsuranceClaimManagement = lazy(
 );
 const ReserveFundManagement = lazy(() => import("./ReserveFundManagement"));
 const WaterLeakManagement = lazy(() => import("./WaterLeakManagement"));
+const EVChargingManagement = lazy(() => import("./EVChargingManagement"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -954,6 +955,12 @@ export default function BuildingPanel() {
       icon: Store,
       show: true,
     },
+    {
+      key: "evCharging",
+      label: "EV Şarj İstasyonu",
+      icon: Zap,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -1089,6 +1096,7 @@ export default function BuildingPanel() {
                     "apartmentValuation",
                     "wasteManagement",
                     "residentMarketplace",
+                    "evCharging",
                     "petManagement",
                     "guestParking",
                     "mediaArchive",
@@ -2670,6 +2678,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "residentMarketplace" && buildingId && (
               <ResidentMarketplace buildingId={buildingId} t={t} />
+            )}
+            {activeTab === "evCharging" && buildingId && (
+              <EVChargingManagement buildingId={buildingId} t={t} />
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
