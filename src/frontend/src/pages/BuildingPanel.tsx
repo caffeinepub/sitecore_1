@@ -183,6 +183,7 @@ const BuildingContactDirectory = lazy(
 );
 const HealthHygieneInspection = lazy(() => import("./HealthHygieneInspection"));
 const SmartMeterManagement = lazy(() => import("./SmartMeterManagement"));
+const ResidentEducation = lazy(() => import("./ResidentEducation"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -1005,6 +1006,12 @@ export default function BuildingPanel() {
       icon: Gauge,
       show: true,
     },
+    {
+      key: "residentEducation",
+      label: "Sakin Eğitim & Bilgi Bankası",
+      icon: BookOpen,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -1153,6 +1160,12 @@ export default function BuildingPanel() {
                     "serviceRequests",
                     "duesTransparency",
                     "facilityEquipment",
+                    "specialDays",
+                    "residentSolidarity",
+                    "buildingContactDirectory",
+                    "health-hygiene",
+                    "smartMeter",
+                    "residentEducation",
                   ],
                 },
               ];
@@ -2747,6 +2760,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "smartMeter" && buildingId && (
               <SmartMeterManagement buildingId={buildingId} />
+            )}
+            {activeTab === "residentEducation" && buildingId && (
+              <ResidentEducation buildingId={buildingId} />
             )}
             {activeTab === "legalDebt" && buildingId && (
               <LegalDebtTracking
