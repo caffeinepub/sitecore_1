@@ -166,6 +166,10 @@ const TenantManagement = lazy(() => import("./TenantManagement"));
 const VehicleMaintenanceTracking = lazy(
   () => import("./VehicleMaintenanceTracking"),
 );
+const EnergyConsumption = lazy(() => import("./EnergyConsumption"));
+const InsuranceClaimManagement = lazy(
+  () => import("./InsuranceClaimManagement"),
+);
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -896,6 +900,18 @@ export default function BuildingPanel() {
       key: "vehicleMaintenance",
       label: "Araç Bakım & Muayene",
       icon: Car,
+      show: isOwner,
+    },
+    {
+      key: "energyConsumption",
+      label: "Enerji Tüketimi & Tasarrufu",
+      icon: Zap,
+      show: true,
+    },
+    {
+      key: "insuranceClaims",
+      label: "Sigorta & Hasar Yönetimi",
+      icon: Shield,
       show: isOwner,
     },
   ].filter((tab) => tab.show);
@@ -2844,6 +2860,8 @@ export default function BuildingPanel() {
             {activeTab === "vehicleMaintenance" && (
               <VehicleMaintenanceTracking t={t as any} />
             )}
+            {activeTab === "energyConsumption" && <EnergyConsumption />}
+            {activeTab === "insuranceClaims" && <InsuranceClaimManagement />}
           </Suspense>
         </main>
       </div>
