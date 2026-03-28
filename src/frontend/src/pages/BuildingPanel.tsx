@@ -182,6 +182,7 @@ const BuildingContactDirectory = lazy(
   () => import("./BuildingContactDirectory"),
 );
 const HealthHygieneInspection = lazy(() => import("./HealthHygieneInspection"));
+const SmartMeterManagement = lazy(() => import("./SmartMeterManagement"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -996,6 +997,12 @@ export default function BuildingPanel() {
       key: "health-hygiene",
       label: "Sağlık & Hijyen Denetimi",
       icon: ShieldCheck,
+      show: true,
+    },
+    {
+      key: "smartMeter",
+      label: "Akıllı Sayaç & Okuma",
+      icon: Gauge,
       show: true,
     },
   ].filter((tab) => tab.show);
@@ -2737,6 +2744,9 @@ export default function BuildingPanel() {
             )}
             {activeTab === "petManagement" && buildingId && (
               <PetManagement buildingId={buildingId} isOwner={isOwner} t={t} />
+            )}
+            {activeTab === "smartMeter" && buildingId && (
+              <SmartMeterManagement buildingId={buildingId} />
             )}
             {activeTab === "legalDebt" && buildingId && (
               <LegalDebtTracking
