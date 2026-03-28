@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Copy,
   CreditCard,
+  Droplets,
   FileText,
   Flame,
   Gauge,
@@ -170,6 +171,8 @@ const EnergyConsumption = lazy(() => import("./EnergyConsumption"));
 const InsuranceClaimManagement = lazy(
   () => import("./InsuranceClaimManagement"),
 );
+const ReserveFundManagement = lazy(() => import("./ReserveFundManagement"));
+const WaterLeakManagement = lazy(() => import("./WaterLeakManagement"));
 export default function BuildingPanel() {
   const { id: buildingId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -914,6 +917,24 @@ export default function BuildingPanel() {
       icon: Shield,
       show: isOwner,
     },
+    {
+      key: "reserveFund",
+      label: "Rezerv Fonu Yönetimi",
+      icon: PiggyBank,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "waterLeak",
+      label: "Su Tüketimi & Kaçak Takibi",
+      icon: Droplets,
+      show: isOwner || hasPermission("manage_users"),
+    },
+    {
+      key: "apartmentValuation",
+      label: "Daire Değerleme & Piyasa",
+      icon: TrendingUp,
+      show: true,
+    },
   ].filter((tab) => tab.show);
 
   if (loading) {
@@ -1028,6 +1049,7 @@ export default function BuildingPanel() {
                     "cleaning",
                     "projectManagement",
                     "repairQuotes",
+                    "waterLeak",
                   ],
                 },
                 {
@@ -2862,6 +2884,8 @@ export default function BuildingPanel() {
             )}
             {activeTab === "energyConsumption" && <EnergyConsumption />}
             {activeTab === "insuranceClaims" && <InsuranceClaimManagement />}
+            {activeTab === "reserveFund" && <ReserveFundManagement />}
+            {activeTab === "waterLeak" && <WaterLeakManagement />}
           </Suspense>
         </main>
       </div>
